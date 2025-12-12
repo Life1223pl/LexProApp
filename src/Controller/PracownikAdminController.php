@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Admin;
+namespace App\Controller;
 
 use App\Entity\Pracownik;
 use App\Form\AdminPracownikType;
@@ -50,7 +50,7 @@ class PracownikAdminController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if (!$this->isCsrfTokenValid('verify_'.$pracownik->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('verify_'.$pracownik->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Nieprawidłowy token CSRF.');
         }
 
@@ -67,7 +67,7 @@ class PracownikAdminController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if (!$this->isCsrfTokenValid('deactivate_'.$pracownik->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('deactivate_'.$pracownik->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Nieprawidłowy token CSRF.');
         }
 

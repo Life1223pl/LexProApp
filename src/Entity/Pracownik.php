@@ -180,7 +180,7 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->stopien;
     }
 
-    public function setStopien(string $stopien): static
+    public function setStopien(?string $stopien): static
     {
         $this->stopien = $stopien;
 
@@ -192,7 +192,7 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->funkcja;
     }
 
-    public function setFunkcja(string $funkcja): static
+    public function setFunkcja(?string $funkcja): static
     {
         $this->funkcja = $funkcja;
 
