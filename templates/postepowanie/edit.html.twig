@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Postepowanie{% endblock %}
+
+{% block body %}
+    <h1>Edit Postepowanie</h1>
+
+    {{ include('postepowanie/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_postepowanie_index') }}">back to list</a>
+
+    {{ include('postepowanie/_delete_form.html.twig') }}
+{% endblock %}

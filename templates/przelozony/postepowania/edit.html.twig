@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edytuj przydziały postępowania{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Edytuj przydziały / prowadzącego</h1>
+            <a class="btn btn-outline-secondary" href="{{ path('przelozony_postepowania_assignments') }}">← Wróć</a>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Dane postępowania</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="text-muted small">Numer</div>
+                        <div class="fw-semibold">{{ postepowanie.numer }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">Rodzaj</div>
+                        <div class="fw-semibold">{{ postepowanie.rodzaj }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">Data wszczęcia</div>
+                        <div class="fw-semibold">{{ postepowanie.dataWszczecia ? postepowanie.dataWszczecia|date('Y-m-d') : '-' }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">Prowadzący (obecnie)</div>
+                        <div class="fw-semibold">{{ postepowanie.prowadzacy }}</div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">
+                        Podgląd postępowania
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Zmień przydziały</h5>
+
+                {{ form_start(form) }}
+
+                <div class="mb-2 text-muted small">
+                    Dla wyboru wielu pracowników użyj <strong>CTRL</strong> (Windows/Linux) lub <strong>⌘</strong> (Mac) + klik.
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.assignedPracownicy) }}
+                    {{ form_widget(form.assignedPracownicy, { attr: { class: 'form-select', size: 8 } }) }}
+                    {{ form_errors(form.assignedPracownicy) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.prowadzacy) }}
+                    {{ form_widget(form.prowadzacy, { attr: { class: 'form-select' } }) }}
+                    {{ form_errors(form.prowadzacy) }}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Zapisz zmiany</button>
+                    <a class="btn btn-outline-secondary" href="{{ path('przelozony_postepowania_assignments') }}">Anuluj</a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

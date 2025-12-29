@@ -44,20 +44,20 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $stopien = null;
 
-
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $funkcja = null;
 
-    #[ORM\Column]
-    private ?bool $isActive = null;
+    // ✅ ZMIANA: bool + domyślnie false, bez NULL
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isActive = false;
 
-    #[ORM\Column]
-    private ?bool $isVerified = null;
+    // ✅ ZMIANA: bool + domyślnie false, bez NULL
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isVerified = false;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'podwladni')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?self $przelozony = null;
-
 
     /**
      * @var Collection<int, self>
@@ -65,9 +65,30 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'przelozony')]
     private Collection $podwladni;
 
+    /**
+     * @var Collection<int, Postepowanie>
+     */
+    #[ORM\OneToMany(targetEntity: Postepowanie::class, mappedBy: 'prowadzacy')]
+    private Collection $postepowaniaProwadzone;
+
+    /**
+     * @var Collection<int, Postepowanie>
+     */
+    #[ORM\OneToMany(targetEntity: Postepowanie::class, mappedBy: 'approvedBy')]
+    private Collection $approvedAt;
+
+    /**
+     * @var Collection<int, PostepowaniePracownik>
+     */
+    #[ORM\OneToMany(targetEntity: PostepowaniePracownik::class, mappedBy: 'pracownik')]
+    private Collection $przypisaniaDoPostepowan;
+
     public function __construct()
     {
         $this->podwladni = new ArrayCollection();
+        $this->postepowaniaProwadzone = new ArrayCollection();
+        $this->approvedAt = new ArrayCollection();
+        $this->przypisaniaDoPostepowan = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -199,7 +220,8 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isActive(): ?bool
+    // ✅ ZMIANA: zwraca bool (nie ?bool)
+    public function isActive(): bool
     {
         return $this->isActive;
     }
@@ -211,7 +233,8 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isVerified(): ?bool
+    // ✅ ZMIANA: zwraca bool (nie ?bool)
+    public function isVerified(): bool
     {
         return $this->isVerified;
     }
@@ -263,5 +286,106 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Postepowanie>
+     */
+    public function getPostepowaniaProwadzone(): Collection
+    {
+        return $this->postepowaniaProwadzone;
+    }
+
+    public function addPostepowaniaProwadzone(Postepowanie $postepowaniaProwadzone): static
+    {
+        if (!$this->postepowaniaProwadzone->contains($postepowaniaProwadzone)) {
+            $this->postepowaniaProwadzone->add($postepowaniaProwadzone);
+            $postepowaniaProwadzone->setProwadzacy($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostepowaniaProwadzone(Postepowanie $postepowaniaProwadzone): static
+    {
+        if ($this->postepowaniaProwadzone->removeElement($postepowaniaProwadzone)) {
+            // set the owning side to null (unless already changed)
+            if ($postepowaniaProwadzone->getProwadzacy() === $this) {
+                $postepowaniaProwadzone->setProwadzacy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Postepowanie>
+     */
+    public function getApprovedAt(): Collection
+    {
+        return $this->approvedAt;
+    }
+
+    public function addApprovedAt(Postepowanie $approvedAt): static
+    {
+        if (!$this->approvedAt->contains($approvedAt)) {
+            $this->approvedAt->add($approvedAt);
+            $approvedAt->setApprovedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApprovedAt(Postepowanie $approvedAt): static
+    {
+        if ($this->approvedAt->removeElement($approvedAt)) {
+            // set the owning side to null (unless already changed)
+            if ($approvedAt->getApprovedBy() === $this) {
+                $approvedAt->setApprovedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostepowaniePracownik>
+     */
+    public function getPrzypisaniaDoPostepowan(): Collection
+    {
+        return $this->przypisaniaDoPostepowan;
+    }
+
+    public function addPrzypisaniaDoPostepowan(PostepowaniePracownik $przypisaniaDoPostepowan): static
+    {
+        if (!$this->przypisaniaDoPostepowan->contains($przypisaniaDoPostepowan)) {
+            $this->przypisaniaDoPostepowan->add($przypisaniaDoPostepowan);
+            $przypisaniaDoPostepowan->setPracownik($this);
+        }
+
+        return $this;
+    }
+
+    public function removePrzypisaniaDoPostepowan(PostepowaniePracownik $przypisaniaDoPostepowan): static
+    {
+        if ($this->przypisaniaDoPostepowan->removeElement($przypisaniaDoPostepowan)) {
+            // set the owning side to null (unless already changed)
+            if ($przypisaniaDoPostepowan->getPracownik() === $this) {
+                $przypisaniaDoPostepowan->setPracownik(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        $imie = $this->imie ?? '';
+        $nazwisko = $this->nazwisko ?? '';
+        $email = $this->email ?? '';
+
+        $full = trim($imie.' '.$nazwisko);
+
+        return $full !== '' ? $full.' ('.$email.')' : $email;
     }
 }

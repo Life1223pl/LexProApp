@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Zatwierdzone postępowania i przydziały{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Zatwierdzone postępowania / przydziały</h1>
+
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ path('przelozony_postepowania_index') }}">
+                    Oczekujące na zatwierdzenie
+                </a>
+                <a class="btn btn-outline-danger btn-sm" href="{{ path('przelozony_postepowania_delete_requests') }}">
+                    Wnioski o usunięcie
+                </a>
+            </div>
+        </div>
+
+        {# Flashe #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Numer</th>
+                <th>Rodzaj</th>
+                <th>Prowadzący</th>
+                <th>Przypisani</th>
+                <th>Zatwierdził</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for postepowanie in postepowania %}
+                {% set isWaitingDelete = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
+
+                <tr>
+                    <td>{{ postepowanie.id }}</td>
+                    <td>
+                        {{ postepowanie.numer }}
+                        {% if isWaitingDelete %}
+                            <span class="badge bg-warning text-dark ms-2">Oczekuje na usunięcie</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ postepowanie.rodzaj }}</td>
+                    <td>{{ postepowanie.prowadzacy }}</td>
+                    <td>
+                        {% if postepowanie.przypisania is defined and postepowanie.przypisania|length > 0 %}
+                            <ul class="mb-0">
+                                {% for pp in postepowanie.przypisania %}
+                                    <li>
+                                        {{ pp.pracownik }}
+                                        <span class="badge bg-light text-dark">{{ pp.rola }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span class="text-muted">Brak przypisań</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ postepowanie.approvedBy ? postepowanie.approvedBy : '-' }}
+                        {% if postepowanie.approvedAt %}
+                            <div class="text-muted small">{{ postepowanie.approvedAt|date('Y-m-d H:i') }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">Podgląd</a>
+
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{{ path('przelozony_postepowania_edit', {'id': postepowanie.id}) }}">
+                            Edytuj przydziały
+                        </a>
+
+                        {# Opcjonalnie: od razu usuń jako supervisor (idzie na app_postepowanie_delete) #}
+                        <form method="post"
+                              action="{{ path('app_postepowanie_delete', {'id': postepowanie.id}) }}"
+                              style="display:inline-block"
+                              onsubmit="return confirm('Na pewno usunąć postępowanie?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ postepowanie.id) }}">
+                            <button class="btn btn-sm btn-danger" type="submit">Usuń</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">Brak zatwierdzonych postępowań.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

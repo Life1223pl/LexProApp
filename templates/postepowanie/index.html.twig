@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Postępowania{% endblock %}
+
+{% block body %}
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Postępowania</h1>
+
+            <a class="btn btn-success" href="{{ path('app_postepowanie_new') }}">
+                + Nowe postępowanie
+            </a>
+        </div>
+
+        {# Filtry #}
+        <div class="btn-group mb-3" role="group">
+            <a class="btn btn-outline-primary {% if filter == 'active' %}active{% endif %}"
+               href="{{ path('app_postepowanie_index', {'filter':'active'}) }}">Aktywne</a>
+            <a class="btn btn-outline-primary {% if filter == 'closed' %}active{% endif %}"
+               href="{{ path('app_postepowanie_index', {'filter':'closed'}) }}">Zakończone</a>
+            <a class="btn btn-outline-primary {% if filter == 'all' %}active{% endif %}"
+               href="{{ path('app_postepowanie_index', {'filter':'all'}) }}">Wszystkie</a>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Numer</th>
+                    <th>Rodzaj</th>
+                    <th>Data wszczęcia</th>
+                    <th>Data zakończenia</th>
+                    <th>Status</th>
+                    <th class="text-end">Akcje</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for postepowanie in postepowanies %}
+                    {% set waitingDelete = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
+
+                    <tr>
+                        <td>{{ postepowanie.id }}</td>
+                        <td class="fw-semibold">{{ postepowanie.numer }}</td>
+                        <td>{{ postepowanie.rodzaj }}</td>
+                        <td>{{ postepowanie.dataWszczecia|date('Y-m-d') }}</td>
+                        <td>{{ postepowanie.dataZakonczenia ? postepowanie.dataZakonczenia|date('Y-m-d') : '-' }}</td>
+
+                        <td>
+                            {% if waitingDelete %}
+                                <span class="badge bg-warning text-dark">Oczekuje na usunięcie</span>
+                            {% elseif postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_APPROVED') %}
+                                <span class="badge bg-success">Zatwierdzone</span>
+                            {% elseif postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') %}
+                                <span class="badge bg-secondary">Oczekuje</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">{{ postepowanie.status }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a class="btn btn-outline-primary"
+                                   href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">
+                                    Podgląd
+                                </a>
+
+                                {% if not waitingDelete %}
+                                    <a class="btn btn-outline-secondary"
+                                       href="{{ path('app_postepowanie_edit', {'id': postepowanie.id}) }}">
+                                        Edytuj
+                                    </a>
+                                {% endif %}
+
+                                <form method="post"
+                                      action="{{ path('app_postepowanie_delete', {'id': postepowanie.id}) }}"
+                                      onsubmit="return confirm('Czy na pewno?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ postepowanie.id) }}">
+                                    <button class="btn btn-outline-danger"
+                                            {% if waitingDelete and not is_granted('ROLE_SUPERVISOR') %}disabled{% endif %}>
+                                        {% if is_granted('ROLE_SUPERVISOR') %}
+                                            Usuń
+                                        {% else %}
+                                            {% if waitingDelete %}Wysłano{% else %}Zgłoś usunięcie{% endif %}
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            Brak postępowań
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

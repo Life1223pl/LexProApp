@@ -21,11 +21,10 @@ class RegistrationController extends AbstractController
     ): Response {
         $user = new Pracownik();
 
-        // Wymagane przez Twój flow:
-        // - użytkownik może się zarejestrować
-        // - ale nie może się zalogować, dopóki admin nie zatwierdzi konta
+
         $user->setIsVerified(false);
-        $user->setIsActive(true);
+        $user->setIsActive(false);
+
 
         // Domyślnie każdy nowy pracownik jest ROLE_USER
         $user->setRoles(['ROLE_USER']);

@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Postępowania do zatwierdzenia{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Postępowania do zatwierdzenia</h1>
+
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ path('przelozony_postepowania_assignments') }}">
+                    Zatwierdzone / przydziały
+                </a>
+                <a class="btn btn-outline-danger btn-sm" href="{{ path('przelozony_postepowania_delete_requests') }}">
+                    Wnioski o usunięcie
+                </a>
+            </div>
+        </div>
+
+        {# Flashe #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Numer</th>
+                <th>Rodzaj</th>
+                <th>Data wszczęcia</th>
+                <th>Prowadzący</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for postepowanie in waiting %}
+                <tr>
+                    <td>{{ postepowanie.id }}</td>
+                    <td>{{ postepowanie.numer }}</td>
+                    <td>{{ postepowanie.rodzaj }}</td>
+                    <td>{{ postepowanie.dataWszczecia ? postepowanie.dataWszczecia|date('Y-m-d') : '-' }}</td>
+                    <td>{{ postepowanie.prowadzacy }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">Podgląd</a>
+
+                        <a class="btn btn-sm btn-success"
+                           href="{{ path('przelozony_postepowania_approve', {'id': postepowanie.id}) }}">
+                            Zatwierdź / przypisz
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Brak postępowań oczekujących na zatwierdzenie.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

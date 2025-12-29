@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wnioski o usunięcie postępowań{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-3">Wnioski o usunięcie postępowań</h1>
+
+        {# Flashe #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Numer</th>
+                <th>Prowadzący</th>
+                <th>Wniosek złożył</th>
+                <th>Wniosek złożony</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for postepowanie in waiting %}
+                <tr>
+                    <td>{{ postepowanie.id }}</td>
+                    <td>{{ postepowanie.numer }}</td>
+                    <td>{{ postepowanie.prowadzacy }}</td>
+                    <td>{{ postepowanie.deleteRequestedBy ? postepowanie.deleteRequestedBy : '-' }}</td>
+                    <td>{{ postepowanie.deleteRequestedAt ? postepowanie.deleteRequestedAt|date('Y-m-d H:i') : '-' }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">Podgląd</a>
+
+                        <form method="post"
+                              action="{{ path('przelozony_postepowania_approve_delete', {'id': postepowanie.id}) }}"
+                              style="display:inline-block"
+                              onsubmit="return confirm('Zatwierdzić usunięcie? Postępowanie zostanie trwale usunięte z bazy.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('approve_delete_' ~ postepowanie.id) }}">
+                            <button class="btn btn-sm btn-danger" type="submit">Zatwierdź usunięcie</button>
+                        </form>
+
+                        <form method="post"
+                              action="{{ path('przelozony_postepowania_reject_delete', {'id': postepowanie.id}) }}"
+                              style="display:inline-block"
+                              onsubmit="return confirm('Odrzucić wniosek o usunięcie?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject_delete_' ~ postepowanie.id) }}">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit">Odrzuć</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Brak wniosków o usunięcie.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

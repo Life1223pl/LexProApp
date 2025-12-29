@@ -47,9 +47,11 @@ class AdminPracownikType extends AbstractType
                 'expanded' => true,
                 'choices' => [
                     'User' => 'ROLE_USER',
+                    'Przełożony' => 'ROLE_SUPERVISOR',
                     'Admin' => 'ROLE_ADMIN',
                 ],
             ])
+
         ;
     }
 
