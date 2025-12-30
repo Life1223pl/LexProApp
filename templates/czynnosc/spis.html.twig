@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Spis i opis rzeczy — {{ postepowanie.numer }}{% endblock %}
+
+{% block body %}
+    <div class="container py-4">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+            <div>
+                <h1 class="h4 mb-1">Spis i opis rzeczy</h1>
+                <div class="text-muted small">
+                    Postępowanie: <strong>{{ postepowanie.numer }}</strong> • Czynność: <strong>{{ czynnosc.typ }}</strong>
+                </div>
+            </div>
+
+            <a class="btn btn-outline-secondary"
+               href="{{ path('app_postepowanie_czynnosc_edit', { postepowanie: postepowanie.id, id: czynnosc.id }) }}">
+                Wróć do czynności
+            </a>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <form method="post" id="spisForm">
+            <input type="hidden" name="spisRzeczyJson" id="spisRzeczyJson">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div class="fw-semibold">Pozycje spisu</div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addItem">+ Dodaj pozycję</button>
+                </div>
+
+                <div class="card-body" id="items"></div>
+
+                <div class="card-footer bg-white d-flex gap-2">
+                    <button class="btn btn-primary">Zapisz spis</button>
+                    <a class="btn btn-outline-secondary"
+                       href="{{ path('app_postepowanie_czynnosc_edit', { postepowanie: postepowanie.id, id: czynnosc.id }) }}">
+                        Anuluj
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            const state = Array.isArray({{ spis|json_encode|raw }}) ? {{ spis|json_encode|raw }} : [];
+            const itemsEl = document.getElementById('items');
+            const hidden = document.getElementById('spisRzeczyJson');
+            const addBtn = document.getElementById('addItem');
+            const form = document.getElementById('spisForm');
+
+            function escapeHtml(s) {
+                return String(s ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            }
+
+            function render() {
+                itemsEl.innerHTML = '';
+
+                if (state.length === 0) {
+                    itemsEl.innerHTML = `<div class="text-muted">Brak pozycji. Kliknij „Dodaj pozycję”.</div>`;
+                    return;
+                }
+
+                state.forEach((it, idx) => {
+                    const lp = idx + 1;
+
+                    const card = document.createElement('div');
+                    card.className = 'border rounded-3 p-3 mb-3';
+
+                    card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-semibold">Pozycja ${lp}</div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-remove="${idx}">Usuń</button>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nazwa</label>
+                        <input class="form-control" data-field="nazwa" data-idx="${idx}" value="${escapeHtml(it.nazwa)}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Kategoria</label>
+                        <select class="form-select" data-field="kategoria" data-idx="${idx}">
+                            <option value="">—</option>
+                            <option value="DOBROWOLNIE">Dobrowolnie wydane</option>
+                            <option value="UJAWNIONE">Ujawnione</option>
+                            <option value="PRZYMUSOWO">Przymusowo odebrane</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">Opis</label>
+                        <input class="form-control" data-field="opis" data-idx="${idx}" value="${escapeHtml(it.opis)}">
+                    </div>
+                </div>
+            `;
+
+                    itemsEl.appendChild(card);
+
+                    const sel = card.querySelector('select[data-field="kategoria"]');
+                    if (sel && it.kategoria) sel.value = it.kategoria;
+                });
+
+                itemsEl.querySelectorAll('[data-remove]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const i = parseInt(btn.getAttribute('data-remove'), 10);
+                        state.splice(i, 1);
+                        render();
+                    });
+                });
+
+                itemsEl.querySelectorAll('input[data-field], select[data-field]').forEach(el => {
+                    el.addEventListener('input', () => {
+                        const idx = parseInt(el.getAttribute('data-idx'), 10);
+                        const field = el.getAttribute('data-field');
+                        state[idx] = state[idx] || {};
+                        state[idx][field] = el.value;
+                    });
+                });
+            }
+
+            addBtn.addEventListener('click', () => {
+                state.push({ nazwa: '', opis: '', kategoria: '' });
+                render();
+            });
+
+            form.addEventListener('submit', () => {
+                const cleaned = state.filter(it => {
+                    const n = (it.nazwa ?? '').trim();
+                    const o = (it.opis ?? '').trim();
+                    return n !== '' || o !== '';
+                });
+                hidden.value = JSON.stringify(cleaned);
+            });
+
+            render();
+        })();
+    </script>
+{% endblock %}

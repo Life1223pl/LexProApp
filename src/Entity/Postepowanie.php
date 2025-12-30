@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Czynnosc;
+
 
 #[ORM\Entity(repositoryClass: PostepowanieRepository::class)]
 class Postepowanie
@@ -80,10 +82,18 @@ class Postepowanie
     #[ORM\OneToMany(mappedBy: 'postepowanie', targetEntity: PostepowanieOsoba::class, orphanRemoval: true)]
     private Collection $osoby;
 
+    /**
+     * @var Collection<int, Czynnosc>
+     */
+    #[ORM\OneToMany(mappedBy: 'postepowanie', targetEntity: Czynnosc::class, orphanRemoval: true)]
+    private Collection $czynnosci;
+
+
     public function __construct()
     {
         $this->przypisania = new ArrayCollection();
         $this->osoby = new ArrayCollection();
+        $this->czynnosci = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -276,4 +286,29 @@ class Postepowanie
 
         return $this;
     }
+    /**
+     * @return Collection<int, Czynnosc>
+     */
+    public function getCzynnosci(): Collection
+    {
+        return $this->czynnosci;
+    }
+
+    public function addCzynnosc(Czynnosc $czynnosc): static
+    {
+        if (!$this->czynnosci->contains($czynnosc)) {
+            $this->czynnosci->add($czynnosc);
+            $czynnosc->setPostepowanie($this);
+        }
+        return $this;
+    }
+
+    public function removeCzynnosc(Czynnosc $czynnosc): static
+    {
+        if ($this->czynnosci->removeElement($czynnosc)) {
+            // orphanRemoval=true -> usunięcie rekordu Czynnosc
+        }
+        return $this;
+    }
+
 }

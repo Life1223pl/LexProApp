@@ -1,0 +1,177 @@
+{{ form_start(form) }}
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form_row(form.typ) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.dataStart) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.dataKoniec) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.miejsceOpis) }}
+            </div>
+
+            <div class="col-12">
+                <div class="border rounded-3 p-3 bg-light">
+                    <div class="fw-semibold mb-2">Adres miejsca (opcjonalnie)</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">{{ form_row(form.miejsceAdres.ulica) }}</div>
+                        <div class="col-md-3">{{ form_row(form.miejsceAdres.nrDomu) }}</div>
+                        <div class="col-md-3">{{ form_row(form.miejsceAdres.nrLokalu) }}</div>
+                        <div class="col-md-3">{{ form_row(form.miejsceAdres.kodPocztowy) }}</div>
+                        <div class="col-md-6">{{ form_row(form.miejsceAdres.miejscowosc) }}</div>
+                        <div class="col-md-3">{{ form_row(form.miejsceAdres.kraj) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.podstawaPrawna) }}
+            </div>
+
+            <div class="col-md-4">
+                {{ form_row(form.rejestrowana) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.rejestracjaOpis) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.operatorRejestracjiOpis) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.zalacznikiOpis) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.tresc) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold">Uczestnicy czynności</div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-uczestnik">
+                + Dodaj uczestnika
+            </button>
+        </div>
+        <div class="text-muted small mt-1">
+            Wybierz <strong>albo</strong> pracownika, <strong>albo</strong> osobę z postępowania.
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div id="uczestnicy-collection"
+             data-prototype="{{ form_widget(form.uczestnicy.vars.prototype)|e('html_attr') }}">
+            {% for row in form.uczestnicy %}
+                <div class="border rounded-3 p-3 mb-3 uczestnik-item">
+                    <div class="row g-3">
+                        <div class="col-md-3">{{ form_row(row.rola) }}</div>
+                        <div class="col-md-4">{{ form_row(row.pracownik) }}</div>
+                        <div class="col-md-4">{{ form_row(row.osoba) }}</div>
+                        <div class="col-md-10">{{ form_row(row.opisRoli) }}</div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-danger w-100 remove-uczestnik">Usuń</button>
+                        </div>
+                    </div>
+                    {{ form_rest(row) }}
+
+                </div>
+            {% endfor %}
+        </div>
+
+        {{ form_rest(form) }}
+
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <button class="btn btn-primary">Zapisz</button>
+    <a class="btn btn-outline-secondary" href="{{ path('app_postepowanie_czynnosc_index', { postepowanie: postepowanie.id }) }}">
+        Anuluj
+    </a>
+</div>
+
+{{ form_rest(form) }}
+
+
+{{ form_end(form) }}
+
+<script>
+    (function () {
+        const container = document.getElementById('uczestnicy-collection');
+        if (!container) return;
+
+        const addBtn = document.getElementById('add-uczestnik');
+        let index = container.querySelectorAll('.uczestnik-item').length;
+
+        function addRemoveHandlers(scope) {
+            scope.querySelectorAll('.remove-uczestnik').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const item = btn.closest('.uczestnik-item');
+                    if (item) item.remove();
+                });
+            });
+        }
+
+        addRemoveHandlers(container);
+
+        addBtn?.addEventListener('click', () => {
+            const proto = container.getAttribute('data-prototype');
+            if (!proto) return;
+
+            const html = proto.replace(/__name__/g, index);
+            index++;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'border rounded-3 p-3 mb-3 uczestnik-item';
+            wrapper.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-3">${html.match(/name=".*\[rola\].*?<\/select>/s)?.[0] ?? ''}</div>
+            </div>
+        `;
+
+            // wstawiamy cały prototyp i stylujemy go bootstrapowo:
+            wrapper.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-3"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-10"></div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100 remove-uczestnik">Usuń</button>
+                </div>
+            </div>
+        `;
+
+            // Wstawiamy prototyp jako HTML i potem rozkładamy pola do siatki:
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+
+            const fields = tmp.querySelectorAll('.mb-3');
+            // Pola w kolejności z FormType: rola, pracownik, osoba, opisRoli
+            const cells = wrapper.querySelectorAll('.row .col-md-3, .row .col-md-4, .row .col-md-10');
+            if (cells.length >= 4 && fields.length >= 4) {
+                cells[0].appendChild(fields[0]);
+                cells[1].appendChild(fields[1]);
+                cells[2].appendChild(fields[2]);
+                cells[3].appendChild(fields[3]);
+            } else {
+
+                wrapper.prepend(tmp);
+            }
+
+            container.appendChild(wrapper);
+            addRemoveHandlers(wrapper);
+        });
+    })();
+</script>

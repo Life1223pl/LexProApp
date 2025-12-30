@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nowa czynność — {{ postepowanie.numer }}{% endblock %}
+
+{% block body %}
+    <div class="container py-4">
+        <div class="mb-3">
+            <h1 class="h4 mb-1">Nowa czynność</h1>
+            <div class="text-muted small">Postępowanie: <strong>{{ postepowanie.numer }}</strong></div>
+        </div>
+
+        {% include 'czynnosc/_form.html.twig' with { form: form, postepowanie: postepowanie } %}
+    </div>
+{% endblock %}

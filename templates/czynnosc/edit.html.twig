@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edycja czynności — {{ postepowanie.numer }}{% endblock %}
+
+{% block body %}
+    {% if czynnosc.isSpisRzeczyDozwolony %}
+        <div class="mb-3">
+            <a class="btn btn-outline-primary"
+               href="{{ path('app_postepowanie_czynnosc_spis_edit', { postepowanie: postepowanie.id, id: czynnosc.id }) }}">
+                Spis i opis rzeczy
+            </a>
+        </div>
+    {% endif %}
+
+
+
+    <div class="container py-4">
+        <div class="mb-3">
+            <h1 class="h4 mb-1">Edycja czynności</h1>
+            <div class="text-muted small">Postępowanie: <strong>{{ postepowanie.numer }}</strong></div>
+        </div>
+
+        {% include 'czynnosc/_form.html.twig' with { form: form, postepowanie: postepowanie } %}
+    </div>
+{% endblock %}
