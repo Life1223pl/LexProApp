@@ -18,7 +18,7 @@
 
                 {{ form_start(form) }}
 
-                {# === Dane podstawowe === #}
+
                 <div class="mb-4">
                     <h5 class="mb-3">Dane podstawowe</h5>
                     <div class="row g-3">
@@ -40,7 +40,7 @@
 
                 <hr class="my-4">
 
-                {# === Identyfikacja === #}
+
                 <div class="mb-4">
                     <h5 class="mb-3">Identyfikacja</h5>
                     <div class="row g-3">
@@ -53,7 +53,7 @@
 
                 <hr class="my-4">
 
-                {# === Kontakt === #}
+
                 <div class="mb-4">
                     <h5 class="mb-3">Kontakt</h5>
                     <div class="row g-3">
@@ -63,8 +63,72 @@
                 </div>
 
                 <hr class="my-4">
+                <hr class="my-4">
 
-                {# === Dane dodatkowe === #}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light"><strong>Adres zamieszkania</strong></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">{{ form_row(form.adresZamieszkania.kraj) }}</div>
+                            <div class="col-md-4">{{ form_row(form.adresZamieszkania.miejscowosc) }}</div>
+                            <div class="col-md-4">{{ form_row(form.adresZamieszkania.kodPocztowy) }}</div>
+
+                            <div class="col-md-6">{{ form_row(form.adresZamieszkania.ulica) }}</div>
+                            <div class="col-md-3">{{ form_row(form.adresZamieszkania.nrDomu) }}</div>
+                            <div class="col-md-3">{{ form_row(form.adresZamieszkania.nrLokalu) }}</div>
+                        </div>
+                        <div class="form-text mt-2">
+                            Wymagane minimum: <strong>Miejscowość</strong> i <strong>Nr domu</strong>.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion" id="adresyAccordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingZameld">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseZameld">
+                                Adres zameldowania (opcjonalnie)
+                            </button>
+                        </h2>
+                        <div id="collapseZameld" class="accordion-collapse collapse" data-bs-parent="#adresyAccordion">
+                            <div class="accordion-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">{{ form_row(form.adresZameldowania.kraj) }}</div>
+                                    <div class="col-md-4">{{ form_row(form.adresZameldowania.miejscowosc) }}</div>
+                                    <div class="col-md-4">{{ form_row(form.adresZameldowania.kodPocztowy) }}</div>
+
+                                    <div class="col-md-6">{{ form_row(form.adresZameldowania.ulica) }}</div>
+                                    <div class="col-md-3">{{ form_row(form.adresZameldowania.nrDomu) }}</div>
+                                    <div class="col-md-3">{{ form_row(form.adresZameldowania.nrLokalu) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingKor">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseKor">
+                                Adres korespondencyjny (opcjonalnie)
+                            </button>
+                        </h2>
+                        <div id="collapseKor" class="accordion-collapse collapse" data-bs-parent="#adresyAccordion">
+                            <div class="accordion-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">{{ form_row(form.adresKorespondencyjny.kraj) }}</div>
+                                    <div class="col-md-4">{{ form_row(form.adresKorespondencyjny.miejscowosc) }}</div>
+                                    <div class="col-md-4">{{ form_row(form.adresKorespondencyjny.kodPocztowy) }}</div>
+
+                                    <div class="col-md-6">{{ form_row(form.adresKorespondencyjny.ulica) }}</div>
+                                    <div class="col-md-3">{{ form_row(form.adresKorespondencyjny.nrDomu) }}</div>
+                                    <div class="col-md-3">{{ form_row(form.adresKorespondencyjny.nrLokalu) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
                 <div class="mb-4">
                     <h5 class="mb-3">Dane dodatkowe</h5>
                     <div class="row g-3">

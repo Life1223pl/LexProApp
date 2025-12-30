@@ -44,7 +44,8 @@ final class OsobaController extends AbstractController
 
             $postepowanieId = $request->query->get('postepowanie');
             if ($postepowanieId) {
-                return $this->redirectToRoute('app_postepowanie_show', [
+                // ✅ wracamy do listy osób w postępowaniu
+                return $this->redirectToRoute('app_postepowanie_osoby_index', [
                     'id' => $postepowanieId,
                 ]);
             }
@@ -74,7 +75,8 @@ final class OsobaController extends AbstractController
 
             $postepowanieId = $request->query->get('postepowanie');
             if ($postepowanieId) {
-                return $this->redirectToRoute('app_postepowanie_show', [
+                // ✅ wracamy do listy osób w postępowaniu
+                return $this->redirectToRoute('app_postepowanie_osoby_index', [
                     'id' => $postepowanieId,
                 ]);
             }

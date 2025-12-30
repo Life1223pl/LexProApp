@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Osoba;
+use App\Form\AdresType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -52,8 +53,6 @@ class OsobaType extends AbstractType
             ->add('telefon', TextType::class, ['required' => false, 'label' => 'Telefon'])
             ->add('email', EmailType::class, ['required' => false, 'label' => 'Email'])
 
-            // Na start adresy jako proste pola tekstowe: wpisujesz ulica/nr/kod/miejscowość/kraj
-            // (poniżej w kontrolerze pokażę jak to mapować na embeddable)
             ->add('wyksztalcenie', TextType::class, ['required' => false, 'label' => 'Wykształcenie'])
             ->add('stanCywilny', TextType::class, ['required' => false, 'label' => 'Stan cywilny'])
             ->add('zawod', TextType::class, ['required' => false, 'label' => 'Zawód'])
@@ -65,7 +64,20 @@ class OsobaType extends AbstractType
                 'label' => 'Notatki',
                 'attr' => ['rows' => 4],
             ])
-        ;
+
+            // ✅ ADRESY (Embeddable)
+            ->add('adresZamieszkania', AdresType::class, [
+                'label' => false,
+                'required_main' => true, // minimum wymagane
+            ])
+            ->add('adresZameldowania', AdresType::class, [
+                'label' => false,
+                'required_main' => false,
+            ])
+            ->add('adresKorespondencyjny', AdresType::class, [
+                'label' => false,
+                'required_main' => false,
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
