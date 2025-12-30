@@ -1,18 +1,25 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Osoby w sprawie{% endblock %}
+{% block title %}Osoby w postępowaniu{% endblock %}
 
 {% block body %}
     <div class="container mt-4">
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <h1 class="mb-0">Osoby w sprawie</h1>
+                <h1 class="mb-0">Osoby w postępowaniu</h1>
                 <div class="text-muted small">Postępowanie: <strong>{{ postepowanie.numer }}</strong></div>
             </div>
 
-            <div class="d-flex gap-2">
-                <a class="btn btn-outline-secondary" href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">← Wróć</a>
-                <a class="btn btn-success" href="{{ path('app_postepowanie_osoby_add', {'id': postepowanie.id}) }}">+ Dodaj osobę</a>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-outline-secondary"
+                   href="{{ path('app_postepowanie_show', { id: postepowanie.id }) }}">
+                    ← Wróć
+                </a>
+                <a class="btn btn-success"
+                   href="{{ path('app_postepowanie_osoby_add', { id: postepowanie.id }) }}">
+                    + Dodaj osobę
+                </a>
             </div>
         </div>
 
@@ -22,51 +29,74 @@
             {% endfor %}
         {% endfor %}
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>Osoba</th>
-                    <th>Rola</th>
-                    <th>Pouczenie</th>
-                    <th>Notatki</th>
-                    <th class="text-end">Akcje</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for po in osoby %}
-                    <tr>
-                        <td class="fw-semibold">{{ po.osoba }}</td>
-                        <td>
-                            <span class="badge bg-primary">{{ po.rola }}</span>
-                        </td>
-                        <td>
-                            {% if po.pouczonyOdpowiedzialnoscKarna %}
-                                <span class="badge bg-success">TAK</span>
-                            {% else %}
-                                <span class="badge bg-secondary">NIE</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-muted small">
-                            {{ po.notatki ? po.notatki : '-' }}
-                        </td>
-                        <td class="text-end">
-                            <form method="post"
-                                  action="{{ path('app_postepowanie_osoby_remove', {'id': postepowanie.id, 'poId': po.id}) }}"
-                                  style="display:inline-block"
-                                  onsubmit="return confirm('Usunąć przypięcie tej osoby (rola w tym postępowaniu)?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('remove_po_' ~ po.id) }}">
-                                <button class="btn btn-sm btn-outline-danger">Usuń z postępowania</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">Brak osób przypiętych do postępowania.</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Osoba</th>
+                            <th>Rola</th>
+                            <th>Pouczenie</th>
+                            <th>Notatki</th>
+                            <th class="text-end">Akcje</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for po in osoby %}
+                            <tr>
+                                <td class="fw-semibold">{{ po.osoba }}</td>
+                                <td><span class="badge bg-primary">{{ po.rola }}</span></td>
+                                <td>
+                                    {% if po.pouczonyOdpowiedzialnoscKarna %}
+                                        <span class="badge bg-success">TAK</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">NIE</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">{{ po.notatki ?: '-' }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+
+                                        {# Edytuj dane OSOBY (globalnie) + zachowaj kontekst postępowania #}
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('admin_osoba_edit', { id: po.osoba.id, postepowanie: postepowanie.id }) }}">
+                                                Edytuj dane osoby
+                                            </a>
+                                        {% else %}
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('app_osoba_edit', { id: po.osoba.id, postepowanie: postepowanie.id }) }}">
+                                                Edytuj dane osoby
+                                            </a>
+                                        {% endif %}
+
+                                        {# Usuń tylko przypięcie do postępowania #}
+                                        <form method="post"
+                                              action="{{ path('app_postepowanie_osoby_remove', { id: postepowanie.id, poId: po.id }) }}"
+                                              onsubmit="return confirm('Usunąć tę osobę z postępowania?');"
+                                              style="display:inline-block">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('remove_po_' ~ po.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">Usuń z postępowania</button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Brak osób przypiętych do postępowania.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
         </div>
+
     </div>
 {% endblock %}

@@ -190,4 +190,146 @@ class Osoba
         if ($full !== '') return $full;
         return 'Osoba #'.($this->id ?? 'new');
     }
+    public function getImieOjca(): ?string
+    {
+        return $this->imieOjca;
+    }
+
+    public function setImieOjca(?string $imieOjca): static
+    {
+        $this->imieOjca = $imieOjca;
+        return $this;
+    }
+
+    public function getImieMatki(): ?string
+    {
+        return $this->imieMatki;
+    }
+
+    public function setImieMatki(?string $imieMatki): static
+    {
+        $this->imieMatki = $imieMatki;
+        return $this;
+    }
+
+    public function getNazwiskoRodoweMatki(): ?string
+    {
+        return $this->nazwiskoRodoweMatki;
+    }
+
+    public function setNazwiskoRodoweMatki(?string $nazwiskoRodoweMatki): static
+    {
+        $this->nazwiskoRodoweMatki = $nazwiskoRodoweMatki;
+        return $this;
+    }
+
+    public function getWyksztalcenie(): ?string
+    {
+        return $this->wyksztalcenie;
+    }
+
+    public function setWyksztalcenie(?string $wyksztalcenie): static
+    {
+        $this->wyksztalcenie = $wyksztalcenie;
+        return $this;
+    }
+
+    public function getStanCywilny(): ?string
+    {
+        return $this->stanCywilny;
+    }
+
+    public function setStanCywilny(?string $stanCywilny): static
+    {
+        $this->stanCywilny = $stanCywilny;
+        return $this;
+    }
+
+    public function getZawod(): ?string
+    {
+        return $this->zawod;
+    }
+
+    public function setZawod(?string $zawod): static
+    {
+        $this->zawod = $zawod;
+        return $this;
+    }
+
+    public function getMiejscePracy(): ?string
+    {
+        return $this->miejscePracy;
+    }
+
+    public function setMiejscePracy(?string $miejscePracy): static
+    {
+        $this->miejscePracy = $miejscePracy;
+        return $this;
+    }
+
+    public function getStanowisko(): ?string
+    {
+        return $this->stanowisko;
+    }
+
+    public function setStanowisko(?string $stanowisko): static
+    {
+        $this->stanowisko = $stanowisko;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostepowanieOsoba>
+     */
+    public function getUdzialy(): Collection
+    {
+        return $this->udzialy;
+    }
+
+    public function addUdzialy(PostepowanieOsoba $udzialy): static
+    {
+        if (!$this->udzialy->contains($udzialy)) {
+            $this->udzialy->add($udzialy);
+            $udzialy->setOsoba($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUdzialy(PostepowanieOsoba $udzialy): static
+    {
+        if ($this->udzialy->removeElement($udzialy)) {
+            // set the owning side to null (unless already changed)
+            if ($udzialy->getOsoba() === $this) {
+                $udzialy->setOsoba(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

@@ -49,6 +49,8 @@ security:
         - { path: ^/assets, roles: PUBLIC_ACCESS }
         - { path: ^/_profiler, roles: PUBLIC_ACCESS }
         - { path: ^/_wdt, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/osoby, roles: ROLE_ADMIN }
+        - { path: ^/osoby, roles: ROLE_USER }
 
         # WSZYSTKO INNE WYMAGA LOGOWANIA
         - { path: ^/, roles: ROLE_USER }

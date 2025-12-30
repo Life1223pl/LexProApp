@@ -47,7 +47,7 @@ final class PostepowanieController extends AbstractController
         // Użytkownik tworzy -> zawsze czeka na zatwierdzenie
         $postepowanie->setStatus(Postepowanie::STATUS_WAITING_APPROVAL);
 
-        // Bazowo prowadzącym jest twórca
+
         $postepowanie->setProwadzacy($user);
 
         // Zatwierdzający i data zatwierdzenia są puste do czasu akceptacji przez supervisor
@@ -80,10 +80,16 @@ final class PostepowanieController extends AbstractController
     ): Response {
         $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
 
+
+        $przypisaneOsoby = $postepowanie->getOsoby();
+
+
         return $this->render('postepowanie/show.html.twig', [
             'postepowanie' => $postepowanie,
+            'przypisaneOsoby' => $przypisaneOsoby,
         ]);
     }
+
 
 
     #[Route('/{id}/edit', name: 'app_postepowanie_edit', methods: ['GET', 'POST'])]

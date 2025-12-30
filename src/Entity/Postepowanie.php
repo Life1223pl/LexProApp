@@ -271,7 +271,7 @@ class Postepowanie
     public function removeOsoba(PostepowanieOsoba $postepowanieOsoba): static
     {
         if ($this->osoby->removeElement($postepowanieOsoba)) {
-            // orphanRemoval=true -> rekord PostepowanieOsoba zostanie usunięty
+
         }
 
         return $this;

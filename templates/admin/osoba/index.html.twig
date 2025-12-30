@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin: Osoby{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h1 class="mb-0">Osoby (ADMIN)</h1>
+                <div class="text-muted small">Pełne zarządzanie rekordami w tabeli osoba.</div>
+            </div>
+            <a class="btn btn-success" href="{{ path('admin_osoba_new') }}">+ Dodaj osobę</a>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Imię i nazwisko</th>
+                    <th>PESEL</th>
+                    <th>Telefon</th>
+                    <th>Email</th>
+                    <th class="text-end">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for o in osoby %}
+                    <tr>
+                        <td>{{ o.id }}</td>
+                        <td class="fw-semibold">{{ o }}</td>
+                        <td>{{ o.pesel ?: '-' }}</td>
+                        <td>{{ o.telefon ?: '-' }}</td>
+                        <td>{{ o.email ?: '-' }}</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   href="{{ path('admin_osoba_edit', {'id': o.id}) }}">
+                                    Edytuj
+                                </a>
+
+                                <form method="post"
+                                      action="{{ path('admin_osoba_delete', {'id': o.id}) }}"
+                                      onsubmit="return confirm('Na pewno usunąć OSOBĘ z bazy? To usunie też powiązania, jeśli DB na to pozwala.');"
+                                      style="display:inline-block">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_osoba_' ~ o.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Usuń</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Brak osób w bazie.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

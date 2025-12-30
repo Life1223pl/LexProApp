@@ -76,7 +76,7 @@ final class PostepowanieOsobaController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        // Upewniamy się, że usuwamy przypięcie tylko z tego postępowania
+
         if ($po->getPostepowanie()->getId() !== $postepowanie->getId()) {
             throw $this->createAccessDeniedException();
         }
@@ -102,4 +102,32 @@ final class PostepowanieOsobaController extends AbstractController
 
         throw $this->createAccessDeniedException();
     }
+    #[Route('/{osobaId}/delete', name: 'delete', methods: ['POST'])]
+    public function deleteFromPostepowanie(
+        Postepowanie $postepowanie,
+        int $osobaId,
+        Request $request,
+        EntityManagerInterface $em,
+        PostepowanieRepository $postepowanieRepository
+    ): Response {
+        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
+
+        $rel = $em->getRepository(\App\Entity\PostepowanieOsoba::class)->find($osobaId);
+        if (!$rel || $rel->getPostepowanie()->getId() !== $postepowanie->getId()) {
+            throw $this->createNotFoundException();
+        }
+
+        if (!$this->isCsrfTokenValid('delete_postepowanie_osoba_' . $rel->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Nieprawidłowy token CSRF.');
+        }
+
+        $em->remove($rel);
+        $em->flush();
+
+        $this->addFlash('success', 'Usunięto osobę z postępowania.');
+
+        return $this->redirectToRoute('app_postepowanie_osoby_index', ['id' => $postepowanie->getId()]);
+    }
+
+
 }

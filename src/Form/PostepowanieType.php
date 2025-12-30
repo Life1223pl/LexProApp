@@ -24,7 +24,7 @@ class PostepowanieType extends AbstractType
                 'required' => false,
             ]);
 
-        // NIE MA: prowadzacy / approvedBy / status
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void

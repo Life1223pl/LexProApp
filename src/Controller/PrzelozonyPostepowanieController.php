@@ -197,7 +197,7 @@ final class PrzelozonyPostepowanieController extends AbstractController
         $form = $this->createForm(AdminPostepowanieApproveType::class, null, [
             'pracownicy' => $pracownicy,
             'default_prowadzacy' => $postepowanie->getProwadzacy(),
-            'default_assigned' => [$postepowanie->getProwadzacy()], // ✅ checkbox: domyślnie zaznacz prowadzącego
+            'default_assigned' => [$postepowanie->getProwadzacy()],
         ]);
         $form->handleRequest($request);
 

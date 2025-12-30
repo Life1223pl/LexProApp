@@ -4,52 +4,89 @@
 
 {% block body %}
     <div class="container mt-4">
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h1 class="mb-0">Dodaj osobę do postępowania</h1>
-                <div class="text-muted small">Postępowanie: <strong>{{ postepowanie.numer }}</strong></div>
+                <div class="text-muted small">
+                    Postępowanie: <strong>{{ postepowanie.numer }}</strong>
+                </div>
             </div>
 
-            <a class="btn btn-outline-secondary" href="{{ path('app_postepowanie_osoby_index', {'id': postepowanie.id}) }}">← Wróć</a>
+            <a class="btn btn-outline-secondary"
+               href="{{ path('app_postepowanie_osoby_index', { id: postepowanie.id }) }}">
+                ← Wróć do listy osób
+            </a>
         </div>
 
-        <div class="card">
-            <div class="card-body">
-                {{ form_start(form) }}
+        <div class="row g-4">
 
-                <div class="mb-3">
-                    {{ form_row(form.osoba) }}
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+
+                        {{ form_start(form) }}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_row(form.osoba) }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form_row(form.rola) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.stosunekDoPodejrzanego) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.stosunekDoPokrzywdzonego) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.pouczonyOdpowiedzialnoscKarna) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.notatki) }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-4">
+                            <button class="btn btn-success px-4" type="submit">
+                                Dodaj osobę
+                            </button>
+
+                            <a class="btn btn-outline-secondary"
+                               href="{{ path('app_postepowanie_osoby_index', { id: postepowanie.id }) }}">
+                                Anuluj
+                            </a>
+                        </div>
+
+                        {{ form_end(form) }}
+
+                    </div>
                 </div>
-
-                <div class="mb-3">
-                    {{ form_row(form.rola) }}
-                </div>
-
-                <div class="mb-3">
-                    {{ form_row(form.stosunekDoPodejrzanego) }}
-                </div>
-
-                <div class="mb-3">
-                    {{ form_row(form.stosunekDoPokrzywdzonego) }}
-                </div>
-
-                <div class="form-check mb-3">
-                    {{ form_widget(form.pouczonyOdpowiedzialnoscKarna, { attr: { class: 'form-check-input' } }) }}
-                    {{ form_label(form.pouczonyOdpowiedzialnoscKarna, null, { label_attr: { class: 'form-check-label' } }) }}
-                    {{ form_errors(form.pouczonyOdpowiedzialnoscKarna) }}
-                </div>
-
-                <div class="mb-3">
-                    {{ form_row(form.notatki) }}
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button class="btn btn-success" type="submit">Dodaj</button>
-                    <a class="btn btn-outline-secondary" href="{{ path('app_postepowanie_osoby_index', {'id': postepowanie.id}) }}">Anuluj</a>
-                </div>
-
-                {{ form_end(form) }}
             </div>
+
+            <div class="col-lg-4">
+                <div class="card border-info shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Brak osoby na liście?</h5>
+                        <p class="card-text small text-muted">
+                            Jeśli osoby nie ma w bazie, możesz ją dodać, a następnie przypisać do tego postępowania.
+                        </p>
+
+                        <a class="btn btn-outline-info w-100"
+                           href="{{ path('app_osoba_new', { postepowanie: postepowanie.id }) }}">
+                            + Dodaj nową osobę do bazy
+                        </a>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
     </div>
 {% endblock %}
