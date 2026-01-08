@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class AdminPracownikType extends AbstractType
 {
@@ -50,6 +51,10 @@ class AdminPracownikType extends AbstractType
                     'Przełożony' => 'ROLE_SUPERVISOR',
                     'Admin' => 'ROLE_ADMIN',
                 ],
+            ])
+            ->add('miejsceZatrudnienia', TextType::class, [
+                'label' => 'Miejsce zatrudnienia',
+                'required' => false,
             ])
 
         ;

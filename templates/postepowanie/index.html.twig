@@ -46,6 +46,8 @@
                 <tbody>
                 {% for postepowanie in postepowanies %}
                     {% set waitingDelete = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
+                    {% set waitingApprove = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') %}
+                    {% set canApprove = is_granted('ROLE_ADMIN') or is_granted('ROLE_SUPERVISOR') %}
 
                     <tr>
                         <td>{{ postepowanie.id }}</td>
@@ -59,7 +61,7 @@
                                 <span class="badge bg-warning text-dark">Oczekuje na usunięcie</span>
                             {% elseif postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_APPROVED') %}
                                 <span class="badge bg-success">Zatwierdzone</span>
-                            {% elseif postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') %}
+                            {% elseif waitingApprove %}
                                 <span class="badge bg-secondary">Oczekuje</span>
                             {% else %}
                                 <span class="badge bg-light text-dark">{{ postepowanie.status }}</span>
@@ -67,11 +69,22 @@
                         </td>
 
                         <td class="text-end">
-                            <div class="btn-group btn-group-sm">
+                            <div class="btn-group btn-group-sm" role="group">
                                 <a class="btn btn-outline-primary"
                                    href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}">
                                     Podgląd
                                 </a>
+
+                                {# ✅ Zatwierdzanie (HYBRYDA) — tylko gdy czeka i user ma role #}
+                                {% if waitingApprove and canApprove %}
+                                    <form method="post"
+                                          class="d-inline"
+                                          action="{{ path('app_postepowanie_approve', {'id': postepowanie.id}) }}"
+                                          onsubmit="return confirm('Na pewno zatwierdzić to postępowanie?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ postepowanie.id) }}">
+                                        <button class="btn btn-success">Zatwierdź</button>
+                                    </form>
+                                {% endif %}
 
                                 {% if not waitingDelete %}
                                     <a class="btn btn-outline-secondary"
@@ -81,6 +94,7 @@
                                 {% endif %}
 
                                 <form method="post"
+                                      class="d-inline"
                                       action="{{ path('app_postepowanie_delete', {'id': postepowanie.id}) }}"
                                       onsubmit="return confirm('Czy na pewno?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ postepowanie.id) }}">

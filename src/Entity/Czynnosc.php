@@ -15,21 +15,32 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(columns: ['data_start'], name: 'idx_czynnosc_data_start')]
 class Czynnosc
 {
-    // ===== TYPY CZYNNOŚCI =====
-    public const TYP_PRZESZUKANIE = 'PRZESZUKANIE';
+    // PRZESZUKANIA
+    public const TYP_PRZESZUKANIE = 'PRZESZUKANIE'; // lokal/pomieszczenie
     public const TYP_PRZESZUKANIE_OSOBY = 'PRZESZUKANIE_OSOBY';
     public const TYP_PRZESZUKANIE_URZADZENIA = 'PRZESZUKANIE_URZADZENIA';
 
-    public const TYP_PRZESLUCHANIE_SWIADKA = 'PRZESLUCHANIE_SWIADKA';
-    public const TYP_PRZESLUCHANIE_PODEJRZANEGO = 'PRZESLUCHANIE_PODEJRZANEGO';
-    public const TYP_OGLĘDZINY = 'OGLEDZINY';
+    //  ZATRZYMANIA
     public const TYP_ZATRZYMANIE_RZECZY = 'ZATRZYMANIE_RZECZY';
     public const TYP_ZATRZYMANIE_OSOBY = 'ZATRZYMANIE_OSOBY';
+
+    //  OGLĘDZINY / MIEJSCE ZDARZENIA
+    public const TYP_OGLEDZINY = 'OGLEDZINY';
+
+    // PRZESŁUCHANIA
+    public const TYP_PRZESLUCHANIE_SWIADKA = 'PRZESLUCHANIE_SWIADKA';
+    public const TYP_PRZESLUCHANIE_PODEJRZANEGO = 'PRZESLUCHANIE_PODEJRZANEGO';
+
+    // INNE CZYNNOŚCI
     public const TYP_KONFRONTACJA = 'KONFRONTACJA';
     public const TYP_POBRANIE_MATERIALU = 'POBRANIE_MATERIALU';
     public const TYP_ZAZNAJOMIENIE_Z_AKTAMI = 'ZAZNAJOMIENIE_Z_AKTAMI';
     public const TYP_TESTER_NARKOTYKOWY = 'TESTER_NARKOTYKOWY';
+
+    public const TYP_ZAWIADOMIENIE = "ZAWIADOMIENIE";
+
     public const TYP_INNA = 'INNA';
+
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -94,12 +105,21 @@ class Czynnosc
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $updatedAt;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $dane = null;
+
+    #[ORM\ManyToOne(targetEntity: PostepowanieOsoba::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    private ?PostepowanieOsoba $glownaOsoba = null;
+
     public function __construct()
     {
         $this->miejsceAdres = new Adres();
         $this->uczestnicy = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->dane = [];
+
     }
 
     #[ORM\PreUpdate]
@@ -116,27 +136,33 @@ class Czynnosc
             self::TYP_PRZESZUKANIE_OSOBY,
             self::TYP_PRZESZUKANIE_URZADZENIA,
 
-            self::TYP_PRZESLUCHANIE_SWIADKA,
-            self::TYP_PRZESLUCHANIE_PODEJRZANEGO,
-            self::TYP_OGLĘDZINY,
             self::TYP_ZATRZYMANIE_RZECZY,
             self::TYP_ZATRZYMANIE_OSOBY,
+
+            self::TYP_OGLEDZINY,
+
+            self::TYP_PRZESLUCHANIE_SWIADKA,
+            self::TYP_PRZESLUCHANIE_PODEJRZANEGO,
+
             self::TYP_KONFRONTACJA,
             self::TYP_POBRANIE_MATERIALU,
             self::TYP_ZAZNAJOMIENIE_Z_AKTAMI,
             self::TYP_TESTER_NARKOTYKOWY,
+
+            self::TYP_ZAWIADOMIENIE,
+
             self::TYP_INNA,
         ];
     }
 
-    // ===== CZY DLA TEJ CZYNNOŚCI MOŻNA DODAĆ SPIS RZECZY =====
+    // CZY DLA TEJ CZYNNOŚCI MOŻNA DODAĆ SPIS RZECZY
     public function isSpisRzeczyDozwolony(): bool
     {
         return in_array($this->typ, [
             self::TYP_PRZESZUKANIE,
             self::TYP_PRZESZUKANIE_OSOBY,
             self::TYP_PRZESZUKANIE_URZADZENIA,
-            self::TYP_OGLĘDZINY,
+            self::TYP_OGLEDZINY,
             self::TYP_ZATRZYMANIE_RZECZY,
         ], true);
     }
@@ -302,5 +328,40 @@ class Czynnosc
         $this->operatorRejestracjiOpis = $v;
         return $this;
     }
+    public function getDane(): array
+    {
+        return $this->dane ?? [];
+    }
+
+    public function setDane(?array $dane): static
+    {
+        $this->dane = $dane;
+        return $this;
+    }
+
+    public function getDaneValue(string $key, mixed $default = ''): mixed
+    {
+        $d = $this->getDane();
+        return array_key_exists($key, $d) ? $d[$key] : $default;
+    }
+
+    public function setDaneValue(string $key, mixed $value): static
+    {
+        $d = $this->getDane();
+        $d[$key] = $value;
+        $this->dane = $d;
+        return $this;
+    }
+
+    public function getGlownaOsoba(): ?PostepowanieOsoba
+    {
+        return $this->glownaOsoba;
+    }
+    public function setGlownaOsoba(?PostepowanieOsoba $p): self
+    {
+        $this->glownaOsoba = $p; return $this;
+    }
+
+
 
 }

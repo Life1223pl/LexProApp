@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+
 #[Route('/postepowanie')]
 final class PostepowanieController extends AbstractController
 {
@@ -170,6 +171,39 @@ final class PostepowanieController extends AbstractController
             throw $this->createAccessDeniedException();
         }
     }
+    #[Route('/postepowanie/{id}/approve', name: 'app_postepowanie_approve', methods: ['POST'])]
+    public function approve(Postepowanie $postepowanie, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof \App\Entity\Pracownik) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // musi czekać na zatwierdzenie
+        if ($postepowanie->getStatus() !== \App\Entity\Postepowanie::STATUS_WAITING_APPROVAL) {
+            $this->addFlash('warning', 'To postępowanie nie czeka na zatwierdzenie.');
+            return $this->redirectToRoute('app_postepowanie_index');
+        }
+
+        // HYBRYDA: przełożony prowadzącego albo admin
+        $isSupervisor = $postepowanie->getProwadzacy()?->getPrzelozony()?->getId() === $user->getId();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+
+        if (!$isSupervisor && !$isAdmin) {
+            throw $this->createAccessDeniedException('Brak uprawnień do zatwierdzania tego postępowania.');
+        }
+
+        $postepowanie->setStatus(\App\Entity\Postepowanie::STATUS_APPROVED);
+        $postepowanie->setApprovedBy($user);
+        $postepowanie->setApprovedAt(new \DateTimeImmutable());
+
+        $em->flush();
+
+        $this->addFlash('success', 'Postępowanie zostało zatwierdzone.');
+        return $this->redirectToRoute('app_postepowanie_index');
+    }
+
 
 
 }

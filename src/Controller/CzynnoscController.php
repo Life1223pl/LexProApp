@@ -11,6 +11,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\ProtokolGenerator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\KernelInterface;
+
+
 
 
 
@@ -138,6 +144,30 @@ final class CzynnoscController extends AbstractController
             'spis' => $czynnosc->getSpisRzeczy() ?? [],
         ]);
     }
+    #[Route('/{id}/protokol', name: 'protokol_generate', methods: ['GET'])]
+    public function protokolGenerate(
+        Postepowanie $postepowanie,
+        Czynnosc $czynnosc,
+        ProtokolGenerator $generator,
+        KernelInterface $kernel
+    ): Response {
+        if ($czynnosc->getPostepowanie()->getId() !== $postepowanie->getId()) {
+            throw $this->createNotFoundException('Czynność nie należy do tego postępowania.');
+        }
+
+        $projectDir = $kernel->getProjectDir();
+        $path = $generator->generate($czynnosc, $projectDir);
+
+        $response = new \Symfony\Component\HttpFoundation\BinaryFileResponse($path);
+        $response->setContentDisposition(
+            \Symfony\Component\HttpFoundation\ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            basename($path)
+        );
+
+        return $response;
+    }
+
+
 
 
 }

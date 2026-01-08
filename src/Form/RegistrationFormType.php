@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Validator\Constraints\IsTrue;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class RegistrationFormType extends AbstractType
 {
@@ -52,6 +53,10 @@ class RegistrationFormType extends AbstractType
                 'constraints' => [
                     new IsTrue(['message' => 'Musisz zaakceptować regulamin.']),
                 ],
+            ])
+            ->add('miejsceZatrudnienia', TextType::class, [
+                'label' => 'Miejsce zatrudnienia',
+                'required' => false,
             ])
         ;
     }

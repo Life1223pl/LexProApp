@@ -4,8 +4,9 @@ namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PostepowanieOsobaRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PostepowanieOsobaRepository::class)]
 #[ORM\Table(name: 'postepowanie_osoba')]
 #[ORM\UniqueConstraint(name: 'uniq_post_osoba_rola', columns: ['postepowanie_id', 'osoba_id', 'rola'])]
 class PostepowanieOsoba
@@ -76,3 +77,4 @@ class PostepowanieOsoba
     public function getNotatki(): ?string { return $this->notatki; }
     public function setNotatki(?string $n): static { $this->notatki = $n; return $this; }
 }
+

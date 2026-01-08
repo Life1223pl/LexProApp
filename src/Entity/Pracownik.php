@@ -59,6 +59,10 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?self $przelozony = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $miejsceZatrudnienia = null;
+
+
     /**
      * @var Collection<int, self>
      */
@@ -355,6 +359,17 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->przypisaniaDoPostepowan;
     }
+    public function getMiejsceZatrudnienia(): ?string
+    {
+        return $this->miejsceZatrudnienia;
+    }
+
+    public function setMiejsceZatrudnienia(?string $miejsceZatrudnienia): static
+    {
+        $this->miejsceZatrudnienia = $miejsceZatrudnienia;
+        return $this;
+    }
+
 
     public function addPrzypisaniaDoPostepowan(PostepowaniePracownik $przypisaniaDoPostepowan): static
     {
