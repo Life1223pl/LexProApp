@@ -65,6 +65,8 @@ final class OsobaAdminController extends AbstractController
         return $this->render('admin/osoba/edit.html.twig', [
             'form' => $form,
             'osoba' => $osoba,
+            'postepowanieId' => $request->query->get('postepowanie') ?? $request->query->get('postepowanieId'),
+
         ]);
     }
 
