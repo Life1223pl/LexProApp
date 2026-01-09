@@ -65,6 +65,12 @@ class Postepowanie
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Pracownik $deleteApprovedBy = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $opis = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $glownyArtykulSprawy = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $deleteApprovedAt = null;
 
@@ -310,5 +316,27 @@ class Postepowanie
         }
         return $this;
     }
+    public function getOpis(): ?string
+    {
+        return $this->opis;
+    }
+
+    public function setOpis(?string $opis): static
+    {
+        $this->opis = $opis;
+        return $this;
+    }
+
+    public function getGlownyArtykulSprawy(): ?string
+    {
+        return $this->glownyArtykulSprawy;
+    }
+
+    public function setGlownyArtykulSprawy(?string $glownyArtykulSprawy): static
+    {
+        $this->glownyArtykulSprawy = $glownyArtykulSprawy;
+        return $this;
+    }
+
 
 }

@@ -8,6 +8,8 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+
 
 class PostepowanieType extends AbstractType
 {
@@ -21,6 +23,15 @@ class PostepowanieType extends AbstractType
             ])
             ->add('dataZakonczenia', DateType::class, [
                 'widget' => 'single_text',
+                'required' => false,
+            ])
+            ->add('opis', TextareaType::class, [
+                'label' => 'Opis postępowania',
+                'required' => false,
+                'attr' => ['rows' => 4],
+            ])
+            ->add('glownyArtykulSprawy', TextType::class, [
+                'label' => 'Główny artykuł sprawy',
                 'required' => false,
             ]);
 

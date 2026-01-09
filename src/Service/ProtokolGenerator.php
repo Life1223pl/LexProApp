@@ -28,8 +28,10 @@ final class ProtokolGenerator
         $tp->setValue('POSTEPOWANIE_RODZAJ', (string)($post->getRodzaj() ?? ''));
         $tp->setValue('TYP_CZYNNOSCI', (string)($czynnosc->getTyp() ?? ''));
         $tp->setValue('PROWADZACY_MIEJSCE_ZATRUDNIENIA',
-            (string)($post->getProwadzacy()?->getMiejsceZatrudnienia() ?? '')
-        );
+            (string)($post->getProwadzacy()?->getMiejsceZatrudnienia() ?? ''));
+        $tp->setValue('POSTEPOWANIE_OPIS', (string)($post->getOpis() ?? ''));
+        $tp->setValue('POSTEPOWANIE_GLOWNY_ARTYKUL', (string)($post->getGlownyArtykulSprawy() ?? ''));
+
 
         // DATE/TIME
         $tp->setValue('DATA_START', $czynnosc->getDataStart() ? $czynnosc->getDataStart()->format('Y-m-d H:i') : '');
