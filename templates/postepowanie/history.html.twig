@@ -19,7 +19,7 @@
             </a>
         </div>
 
-        {# czytelne nazwy encji (do selecta i do kolumny "Obiekt") #}
+        {# czytelne nazwy encji #}
         {% set entityNiceNames = {
             'App\\Entity\\Postepowanie': 'Postępowanie',
             'App\\Entity\\PostepowanieOsoba': 'Osoba w postępowaniu',
@@ -77,12 +77,12 @@
             {% elseif v is same as(null) %}
                 —
             {% elseif v is iterable %}
-                {# NAJPIERW relacje (class+id) -> wtedy mamy szansę użyć relatedLabels #}
+
                 {% if v.id is defined and v.class is defined %}
                     {% set key = v.class ~ '#' ~ v.id %}
                     {{ relatedLabels[key] ?? ((v.class|split('\\\\')|last) ~ ' (ID: ' ~ v.id ~ ')') }}
 
-                    {# dopiero potem label (bo u Ciebie label bywa brzydkie: PostepowanieOsoba#12) #}
+
                 {% elseif v.label is defined and v.label %}
                     {{ v.label }}
 
