@@ -12,6 +12,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\HistoryLogRepository;
+
 
 
 #[Route('/postepowanie')]
@@ -159,6 +161,22 @@ final class PostepowanieController extends AbstractController
         $this->addFlash('success', 'Wniosek o usunięcie wysłany do przełożonego.');
 
         return $this->redirectToRoute('app_postepowanie_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/postepowanie/{id}/historia', name: 'app_postepowanie_history', methods: ['GET'])]
+    public function history(
+        Postepowanie $postepowanie,
+        PostepowanieRepository $postepowanieRepository,
+        HistoryLogRepository $historyLogRepository
+    ): Response {
+        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
+
+        $logs = $historyLogRepository->findForPostepowanie($postepowanie, 300);
+
+        return $this->render('postepowanie/history.html.twig', [
+            'postepowanie' => $postepowanie,
+            'logs' => $logs,
+        ]);
     }
 
 

@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historia zmian - Postępowanie {{ postepowanie.numer }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+
+        <div class="text-danger small">TEMPLATE VERSION: 2026-01-13 LABEL-MAP-CLASS</div>
+
+        {# MAPA ETYKIET - KLUCZ = PEŁNA NAZWA KLASY Z history_log.entity_class #}
+        {% set fieldLabelsByClass = {
+            'App\\Entity\\Postepowanie': {
+                'numer': 'Numer postępowania',
+                'rodzaj': 'Rodzaj postępowania',
+                'dataWszczecia': 'Data wszczęcia',
+                'dataZakonczenia': 'Data zakończenia',
+                'status': 'Status',
+                'opis': 'Opis',
+                'glownyArtykulSprawy': 'Główny artykuł sprawy'
+            },
+            'App\\Entity\\PostepowanieOsoba': {
+                'osoba': 'Osoba',
+                'rola': 'Rola w postępowaniu',
+                'stosunekDoPodejrzanego': 'Stosunek do podejrzanego',
+                'stosunekDoPokrzywdzonego': 'Stosunek do pokrzywdzonego',
+                'pouczonyOdpowiedzialnoscKarna': 'Pouczenie o odpowiedzialności karnej',
+                'notatki': 'Notatki'
+            }
+        } %}
+
+
+        {% set entityLabels = {
+            'App\\Entity\\Postepowanie': 'postępowanie',
+            'App\\Entity\\PostepowanieOsoba': 'osobę w postępowaniu'
+        } %}
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h1 class="mb-1">Historia zmian</h1>
+                <div class="text-muted">
+                    Postępowanie: <strong>{{ postepowanie.numer }}</strong>
+                </div>
+            </div>
+
+            <a class="btn btn-outline-secondary" href="{{ path('app_postepowanie_show', {id: postepowanie.id}) }}">
+                Wróć do postępowania
+            </a>
+        </div>
+
+        {% if logs is empty %}
+            <div class="alert alert-info">Brak wpisów w historii.</div>
+        {% else %}
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0 align-middle">
+                        <thead>
+                        <tr>
+                            <th style="width: 170px;">Kiedy</th>
+                            <th style="width: 240px;">Kto</th>
+                            <th style="width: 230px;">Akcja</th>
+                            <th style="width: 230px;">Obiekt</th>
+                            <th>Opis</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for log in logs %}
+                            {% set action = log.action %}
+                            {% set badge = action == 'CREATE'
+                                ? 'success'
+                                : (action == 'DELETE' ? 'danger' : 'warning')
+                            %}
+
+                            {% set entityShort = log.entityClass|split('\\\\')|last %}
+                            {% set humanEntity = entityLabels[log.entityClass] ?? (entityShort|lower) %}
+                            {% set labelsForFields = fieldLabelsByClass[log.entityClass] ?? {} %}
+
+                            {# pola techniczne#}
+                            {% set hiddenFields = ['id', 'createdAt', 'updatedAt', 'postepowanie', 'czynnosc'] %}
+
+
+                            {% set parts = [] %}
+
+                            {# specjalnie dla PostepowanieOsoba - osoba + rola #}
+                            {% set osobaLabel = null %}
+                            {% set rolaValue = null %}
+
+                            {% if log.changes %}
+                                {% if log.changes.osoba is defined %}
+                                    {% set osobaNew = log.changes.osoba.new ?? null %}
+                                    {% set osobaLabel = (osobaNew is iterable and osobaNew.label is defined) ? osobaNew.label : osobaNew %}
+                                {% endif %}
+
+                                {% if log.changes.rola is defined %}
+                                    {% set rolaNew = log.changes.rola.new ?? null %}
+                                    {% set rolaValue = (rolaNew is iterable and rolaNew.label is defined) ? rolaNew.label : rolaNew %}
+                                {% endif %}
+
+                                {% for field, ch in log.changes %}
+                                    {% if field not in hiddenFields %}
+
+                                        {% set old = ch.old %}
+                                        {% set new = ch.new %}
+
+
+                                        {% set oldPretty = old is iterable and old.label is defined ? old.label : old %}
+                                        {% set newPretty = new is iterable and new.label is defined ? new.label : new %}
+
+
+                                        {% set oldPretty = (oldPretty is same as(null) or oldPretty == '') ? '—' : oldPretty %}
+                                        {% set newPretty = (newPretty is same as(null) or newPretty == '') ? '—' : newPretty %}
+
+
+                                        {% set label = labelsForFields[field] ?? field %}
+
+
+                                        {% if entityShort == 'PostepowanieOsoba' and (field == 'osoba' or field == 'rola') %}
+                                        {% else %}
+                                            {% set parts = parts|merge([ label ~ ': ' ~ oldPretty ~ ' → ' ~ newPretty ]) %}
+                                        {% endif %}
+
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+
+                            <tr>
+                                <td class="text-nowrap">{{ log.occurredAt|date('Y-m-d H:i:s') }}</td>
+
+                                <td>
+                                    {% if log.user %}
+                                        <div>{{ log.user }}</div>
+                                        {% if log.user.email is defined %}
+                                            <div class="text-muted small">({{ log.user.email }})</div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">system</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                <span class="badge bg-{{ badge }}">
+                                    {{ log.readableAction }}
+                                </span>
+                                </td>
+
+                                <td>
+                                    <div class="small">
+                                        <div><strong>{{ log.entityClass }}</strong></div>
+                                        <div class="text-muted">ID: {{ log.entityId ?? '—' }}</div>
+                                    </div>
+                                </td>
+
+                                <td class="small">
+
+                                    {% if entityShort == 'PostepowanieOsoba' and (action == 'CREATE' or action == 'DELETE') %}
+                                        {% set osobaLabel = (osobaLabel is same as(null) or osobaLabel == '') ? '—' : osobaLabel %}
+                                        {% set rolaValue = (rolaValue is same as(null) or rolaValue == '') ? null : rolaValue %}
+
+                                        {% if action == 'CREATE' %}
+                                            <div>Dodano osobę: <strong>{{ osobaLabel }}</strong>{% if rolaValue %} (rola: <strong>{{ rolaValue }}</strong>){% endif %}.</div>
+                                        {% else %}
+                                            <div>Usunięto osobę: <strong>{{ osobaLabel }}</strong>{% if rolaValue %} (rola: <strong>{{ rolaValue }}</strong>){% endif %}.</div>
+                                        {% endif %}
+
+                                        {% if parts|length > 0 %}
+                                            <ul class="mb-0 ps-3">
+                                                {% for part in parts %}
+                                                    <li>{{ part }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+
+                                        {# OGÓLNY PRZYPADEK #}
+                                    {% else %}
+                                        {% if action == 'CREATE' %}
+                                            <div>Utworzono {{ humanEntity }}.</div>
+                                        {% elseif action == 'DELETE' %}
+                                            <div>Usunięto {{ humanEntity }}.</div>
+                                        {% else %}
+                                            {% if parts|length > 0 %}
+                                                <div>Zmieniono {{ humanEntity }}:</div>
+                                                <ul class="mb-0 ps-3">
+                                                    {% for part in parts %}
+                                                        <li>{{ part }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <div>Zmieniono {{ humanEntity }}.</div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

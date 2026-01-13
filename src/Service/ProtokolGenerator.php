@@ -69,7 +69,7 @@ final class ProtokolGenerator
         $tp->setValue('OSWIADCZENIE_POZOSTALYCH_OSOB', (string) $czynnosc->getDaneValue('oswiadczenie_pozostalych_osob', ''));
 
 
-        // rejestracja: bierzemy z JSON jeśli jest, ale czyścimy jeśli czynnosc->rejestrowana = false
+        // rejestracja: bierzemy z JSON
         $rej = is_array($d['rejestracja'] ?? null) ? $d['rejestracja'] : [];
 
 
