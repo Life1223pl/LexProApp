@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\HistoryLogRepository;
+use App\Repository\PracownikRepository;
+
 
 
 
@@ -167,17 +169,45 @@ final class PostepowanieController extends AbstractController
     public function history(
         Postepowanie $postepowanie,
         PostepowanieRepository $postepowanieRepository,
-        HistoryLogRepository $historyLogRepository
+        HistoryLogRepository $historyLogRepository,
+        PracownikRepository $pracownikRepository,
+        Request $request
     ): Response {
         $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
 
-        $logs = $historyLogRepository->findForPostepowanie($postepowanie, 300);
+        $filters = [
+            'from'   => $request->query->get('from'),
+            'to'     => $request->query->get('to'),
+            'action' => $request->query->get('action'),
+            'entity' => $request->query->get('entity'),
+            'user'   => $request->query->get('user'),
+        ];
+
+        // wyczyść puste wartości
+        $filters = array_filter($filters, static fn($v) => $v !== null && $v !== '');
+
+        // logi wg filtrów
+        $logs = $historyLogRepository->findForPostepowanieFiltered($postepowanie, $filters, 300);
+
+        // użytkownicy do selecta
+        $users = $pracownikRepository->findAll();
+
+        // obiekty (encje) do selecta - wyciągnięte z bazy dla tego postępowania
+        $entityChoices = $historyLogRepository->findDistinctEntityClassesForPostepowanie($postepowanie);
+
+        $relatedLabels = $historyLogRepository->buildRelatedLabelsForLogs($logs);
 
         return $this->render('postepowanie/history.html.twig', [
-            'postepowanie' => $postepowanie,
-            'logs' => $logs,
+            'postepowanie'  => $postepowanie,
+            'logs'          => $logs,
+            'filters'       => $filters,
+            'users'         => $users,
+            'entityChoices' => $entityChoices,
+            'relatedLabels' => $relatedLabels,
+
         ]);
     }
+
 
 
     private function denyUnlessAccessible(Postepowanie $postepowanie, PostepowanieRepository $repo): void

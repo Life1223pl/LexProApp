@@ -280,7 +280,7 @@ class HistoryLogDoctrineSubscriber
                 return [
                     'class' => $this->realClass($value),
                     'id' => $value->getId(),
-                    'label' => method_exists($value, '__toString') ? (string) $value : null,
+                    'label' => $this->makeLabel($value),
                 ];
             }
 
@@ -295,6 +295,47 @@ class HistoryLogDoctrineSubscriber
             return $value;
         }
 
+
         return (string) $value;
     }
+    private function makeLabel(object $value): ?string
+    {
+        // jeśli encja ma __toString()
+        if (method_exists($value, '__toString')) {
+            $s = trim((string) $value);
+            if ($s !== '' && $s !== 'Object') {
+                return $s;
+            }
+        }
+
+
+        $first = null;
+        $last  = null;
+
+        if (method_exists($value, 'getImie')) {
+            $first = $value->getImie();
+        } elseif (method_exists($value, 'getFirstName')) {
+            $first = $value->getFirstName();
+        }
+
+        if (method_exists($value, 'getNazwisko')) {
+            $last = $value->getNazwisko();
+        } elseif (method_exists($value, 'getLastName')) {
+            $last = $value->getLastName();
+        }
+
+        $full = trim(trim((string) $first) . ' ' . trim((string) $last));
+        if ($full !== '') {
+            return $full;
+        }
+
+
+        if (method_exists($value, 'getId') && $value->getId() !== null) {
+            $short = (new \ReflectionClass($value))->getShortName();
+            return $short . '#' . $value->getId();
+        }
+
+        return null;
+    }
+
 }
