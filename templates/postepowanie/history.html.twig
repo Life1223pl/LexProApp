@@ -65,7 +65,13 @@
         {# mapy enumów #}
         {% set enumMaps = {
             'rodzaj': {'dochodzenie':'Dochodzenie','sledztwo':'Śledztwo'},
-            'typ': {'ogledziny':'Oględziny','przeszukanie':'Przeszukanie'}
+            'typ': {'ogledziny':'Oględziny','przeszukanie':'Przeszukanie'},
+            'rodzaj': {
+                'dochodzenie': 'Dochodzenie',
+                'sledztwo': 'Śledztwo',
+                'wykroczenie': 'Postępowanie o wykroczenie'
+            }
+
         } %}
 
         {# makro do ładnego formatowania wartości #}
@@ -220,7 +226,19 @@
                                 </td>
 
                                 <td>
-                                    <span class="badge bg-{{ badge }}">{{ log.readableAction }}</span>
+                                    {# dot. trybu daltonisty: nie opieramy się tylko na kolorze (ikona + tekst) #}
+                                    {% set actionLabel = action == 'CREATE'
+                                        ? 'Utworzono'
+                                        : (action == 'DELETE' ? 'Usunięto' : 'Zmieniono')
+                                    %}
+                                    {% set actionIcon = action == 'CREATE'
+                                        ? '＋'
+                                        : (action == 'DELETE' ? '🗑' : '✎')
+                                    %}
+
+                                    <span class="badge bg-{{ badge }}">
+                                        {{ actionIcon }} {{ actionLabel }}
+                                    </span>
                                 </td>
 
                                 <td>

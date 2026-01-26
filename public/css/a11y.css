@@ -1,0 +1,43 @@
+/* Tryb daltonistyczny - wyższy kontrast i color-safe */
+.a11y-colorblind {
+    --a11y-success: #009E73;
+    --a11y-warning: #E69F00;
+    --a11y-danger:  #D55E00;
+    --a11y-info:    #0072B2;
+}
+
+/* Badge -  color-safe */
+.a11y-colorblind .badge.bg-success { background-color: var(--a11y-success) !important; }
+.a11y-colorblind .badge.bg-warning { background-color: var(--a11y-warning) !important; color: #111 !important; }
+.a11y-colorblind .badge.bg-danger  { background-color: var(--a11y-danger) !important; }
+.a11y-colorblind .badge.bg-info    { background-color: var(--a11y-info) !important; }
+
+/* Wysoki kontrast fokusów - dla dostępności */
+.a11y-colorblind :focus {
+    outline: 3px solid #000 !important;
+    outline-offset: 2px;
+}
+.a11y-colorblind .btn:focus,
+.a11y-colorblind .form-control:focus,
+.a11y-colorblind .form-select:focus {
+    box-shadow: none !important;
+}
+
+/* Dodatkowe wzmocnienie: obramowanie dla badge */
+.a11y-colorblind .badge {
+    border: 1px solid rgba(0,0,0,.25);
+}
+
+/* delikatne tła */
+.a11y-colorblind .card {
+    background-color: #f8f9fa;
+}
+
+.a11y-colorblind .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f1f3f5;
+}
+
+.a11y-colorblind .table-striped > tbody > tr:nth-of-type(even) {
+    background-color: #ffffff;
+}
+

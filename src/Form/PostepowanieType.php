@@ -9,6 +9,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+
 
 
 class PostepowanieType extends AbstractType
@@ -17,7 +19,16 @@ class PostepowanieType extends AbstractType
     {
         $builder
             ->add('numer', TextType::class)
-            ->add('rodzaj', TextType::class)
+            ->add('rodzaj', ChoiceType::class, [
+                'label' => 'Rodzaj postępowania',
+                'choices' => [
+                    'Dochodzenie' => 'dochodzenie',
+                    'Śledztwo' => 'sledztwo',
+                    'Postępowanie o wykroczenie' => 'wykroczenie',
+                ],
+                'placeholder' => '— wybierz —',
+                'required' => true,
+            ])
             ->add('dataWszczecia', DateType::class, [
                 'widget' => 'single_text',
             ])
