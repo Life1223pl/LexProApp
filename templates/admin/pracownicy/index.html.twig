@@ -1,81 +1,142 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Admin: Pracownicy{% endblock %}
+{% block title %}Pracownicy{% endblock %}
 
 {% block body %}
-    <div style="max-width: 1100px; margin: 24px auto;">
-        <h1>Pracownicy</h1>
+    <div class="container mt-4">
+
+        <h1 class="mb-4">Pracownicy</h1>
 
         {% for message in app.flashes('success') %}
-            <div style="padding:10px;border:1px solid #0a0;background:#efe;margin:10px 0;">{{ message }}</div>
+            <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
 
-        <h2>Niezatwierdzone konta</h2>
-        {% if niezweryfikowani is empty %}
-            <p>Brak.</p>
-        {% else %}
-            <table border="1" cellpadding="6" cellspacing="0" width="100%">
-                <thead>
-                <tr>
-                    <th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Akcje</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for p in niezweryfikowani %}
-                    <tr>
-                        <td>{{ p.id }}</td>
-                        <td>{{ p.email }}</td>
-                        <td>{{ p.imie }}</td>
-                        <td>{{ p.nazwisko }}</td>
-                        <td>
-                            <a href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">Edytuj</a>
+        {# ===================== OCZEKUJĄCY ===================== #}
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                ⏳ Oczekujący użytkownicy ({{ oczekujacy|length }})
+            </div>
 
-                            <form method="post" action="{{ path('admin_pracownicy_verify', {id: p.id}) }}" style="display:inline;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('verify_' ~ p.id) }}">
-                                <button type="submit">Zatwierdź</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
+            <div class="card-body p-0">
+                {% if oczekujacy is empty %}
+                    <div class="p-3 text-muted">Brak oczekujących użytkowników.</div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Lp</th>
+                                <th>Email</th>
+                                <th>Imię</th>
+                                <th>Nazwisko</th>
+                                <th class="text-end">Akcje</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for p in oczekujacy %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ p.email }}</td>
+                                    <td>{{ p.imie }}</td>
+                                    <td>{{ p.nazwisko }}</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
 
-        <hr>
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">
+                                                ✎ Edytuj
+                                            </a>
 
-        <h2>Wszyscy</h2>
-        <table border="1" cellpadding="6" cellspacing="0" width="100%">
-            <thead>
-            <tr>
-                <th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Zatw.</th><th>Aktyw.</th><th>Przełożony</th><th>Akcje</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for p in wszyscy %}
-                <tr>
-                    <td>{{ p.id }}</td>
-                    <td>{{ p.email }}</td>
-                    <td>{{ p.imie }}</td>
-                    <td>{{ p.nazwisko }}</td>
-                    <td>{{ p.isVerified ? 'TAK' : 'NIE' }}</td>
-                    <td>{{ p.isActive ? 'TAK' : 'NIE' }}</td>
-                    <td>
-                        {% if p.przelozony %}
-                            {{ p.przelozony.imie }} {{ p.przelozony.nazwisko }}
+                                            <form method="post"
+                                                  action="{{ path('admin_pracownicy_activate', {id: p.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('activate_' ~ p.id) }}">
+                                                <button class="btn btn-sm btn-success">
+                                                    ✔ Aktywuj
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ===================== AKTYWNI ===================== #}
+        <div class="card shadow-sm">
+            <div class="card-header">
+                ✔ Aktywni użytkownicy ({{ aktywni|length }})
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Lp</th>
+                            <th>Email</th>
+                            <th>Imię</th>
+                            <th>Nazwisko</th>
+                            <th>Przełożony</th>
+                            <th>Status</th>
+                            <th class="text-end">Akcje</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for p in aktywni %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ p.email }}</td>
+                                <td>{{ p.imie }}</td>
+                                <td>{{ p.nazwisko }}</td>
+                                <td>
+                                    {% if p.przelozony %}
+                                        {{ p.przelozony.imie }} {{ p.przelozony.nazwisko }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-success">✔ Aktywny</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">
+                                            ✎ Edytuj
+                                        </a>
+
+                                        <form method="post"
+                                              action="{{ path('admin_pracownicy_deactivate', {id: p.id}) }}"
+                                              onsubmit="return confirm('Zablokować użytkownika?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('deactivate_' ~ p.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                ❌ Zablokuj
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
                         {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">Edytuj</a>
-                        <form method="post" action="{{ path('admin_pracownicy_deactivate', {id: p.id}) }}" style="display:inline;">
-                            <input type="hidden" name="_token" value="{{ csrf_token('deactivate_' ~ p.id) }}">
-                            <button type="submit">Dezaktywuj</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-3">
+                                    Brak użytkowników.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 {% endblock %}

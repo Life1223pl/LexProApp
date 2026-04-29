@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 
 class RegistrationFormType extends AbstractType
 {
@@ -34,10 +35,18 @@ class RegistrationFormType extends AbstractType
                     new NotBlank(['message' => 'Podaj adres e-mail']),
                 ],
             ])
-            ->add('plainPassword', PasswordType::class, [
-                'label' => 'Hasło',
+            ->add('plainPassword', RepeatedType::class, [
+                'type' => PasswordType::class,
                 'mapped' => false,
-                'attr' => ['autocomplete' => 'new-password'],
+                'first_options' => [
+                    'label' => 'Hasło',
+                    'attr' => ['class' => 'form-control', 'autocomplete' => 'new-password'],
+                ],
+                'second_options' => [
+                    'label' => 'Powtórz hasło',
+                    'attr' => ['class' => 'form-control'],
+                ],
+                'invalid_message' => 'Hasła muszą być takie same.',
                 'constraints' => [
                     new NotBlank(['message' => 'Podaj hasło']),
                     new Length([

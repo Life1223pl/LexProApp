@@ -18,8 +18,8 @@ class PracownikAdminController extends AbstractController
     public function index(PracownikRepository $repo): Response
     {
         return $this->render('admin/pracownicy/index.html.twig', [
-            'niezweryfikowani' => $repo->findBy(['isVerified' => false], ['id' => 'DESC']),
-            'wszyscy' => $repo->findBy([], ['id' => 'DESC']),
+            'oczekujacy' => $repo->findBy(['isActive' => false], ['id' => 'DESC']),
+            'aktywni' => $repo->findBy(['isActive' => true], ['id' => 'DESC']),
         ]);
     }
 
@@ -35,6 +35,7 @@ class PracownikAdminController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Zapisano zmiany.');
+
             return $this->redirectToRoute('admin_pracownicy_index');
         }
 
@@ -44,20 +45,21 @@ class PracownikAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/verify', name: 'verify', methods: ['POST'])]
-    public function verify(
+    #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
+    public function activate(
         Pracownik $pracownik,
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if (!$this->isCsrfTokenValid('verify_'.$pracownik->getId(), (string) $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('activate_'.$pracownik->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Nieprawidłowy token CSRF.');
         }
 
-        $pracownik->setIsVerified(true);
+        $pracownik->setIsActive(true);
         $em->flush();
 
-        $this->addFlash('success', 'Konto zatwierdzone.');
+        $this->addFlash('success', 'Użytkownik został aktywowany.');
+
         return $this->redirectToRoute('admin_pracownicy_index');
     }
 
@@ -74,7 +76,8 @@ class PracownikAdminController extends AbstractController
         $pracownik->setIsActive(false);
         $em->flush();
 
-        $this->addFlash('success', 'Konto dezaktywowane.');
+        $this->addFlash('success', 'Użytkownik został zablokowany.');
+
         return $this->redirectToRoute('admin_pracownicy_index');
     }
 }

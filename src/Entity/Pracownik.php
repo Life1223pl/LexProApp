@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: PracownikRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[UniqueEntity(fields: ['email'], message: 'Istnieje już konto z tym adresem email')]
 class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -23,15 +23,9 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -47,11 +41,11 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $funkcja = null;
 
-    // ✅ ZMIANA: bool + domyślnie false, bez NULL
+    // KLUCZOWE: kontrola dostępu (zatwierdzenie przez admina)
     #[ORM\Column(options: ['default' => false])]
     private bool $isActive = false;
 
-    // ✅ ZMIANA: bool + domyślnie false, bez NULL
+    // opcjonalne (np. email verification)
     #[ORM\Column(options: ['default' => false])]
     private bool $isVerified = false;
 
@@ -62,28 +56,15 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $miejsceZatrudnienia = null;
 
-
-    /**
-     * @var Collection<int, self>
-     */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'przelozony')]
     private Collection $podwladni;
 
-    /**
-     * @var Collection<int, Postepowanie>
-     */
     #[ORM\OneToMany(targetEntity: Postepowanie::class, mappedBy: 'prowadzacy')]
     private Collection $postepowaniaProwadzone;
 
-    /**
-     * @var Collection<int, Postepowanie>
-     */
     #[ORM\OneToMany(targetEntity: Postepowanie::class, mappedBy: 'approvedBy')]
     private Collection $approvedAt;
 
-    /**
-     * @var Collection<int, PostepowaniePracownik>
-     */
     #[ORM\OneToMany(targetEntity: PostepowaniePracownik::class, mappedBy: 'pracownik')]
     private Collection $przypisaniaDoPostepowan;
 
@@ -108,45 +89,28 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -155,13 +119,9 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
-     */
     public function __serialize(): array
     {
         $data = (array) $this;
@@ -170,10 +130,8 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $data;
     }
 
-    #[\Deprecated]
     public function eraseCredentials(): void
     {
-        // @deprecated, to be removed when upgrading to Symfony 8
     }
 
     public function getImie(): ?string
@@ -184,7 +142,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setImie(string $imie): static
     {
         $this->imie = $imie;
-
         return $this;
     }
 
@@ -196,7 +153,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNazwisko(string $nazwisko): static
     {
         $this->nazwisko = $nazwisko;
-
         return $this;
     }
 
@@ -208,7 +164,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStopien(?string $stopien): static
     {
         $this->stopien = $stopien;
-
         return $this;
     }
 
@@ -220,11 +175,10 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFunkcja(?string $funkcja): static
     {
         $this->funkcja = $funkcja;
-
         return $this;
     }
 
-
+    // KLUCZOWA METODA (używana w UserChecker)
     public function isActive(): bool
     {
         return $this->isActive;
@@ -233,10 +187,8 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
-
         return $this;
     }
-
 
     public function isVerified(): bool
     {
@@ -246,7 +198,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
-
         return $this;
     }
 
@@ -258,107 +209,29 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrzelozony(?self $przelozony): static
     {
         $this->przelozony = $przelozony;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, self>
-     */
     public function getPodwladni(): Collection
     {
         return $this->podwladni;
     }
 
-    public function addPodwladni(self $podwladni): static
-    {
-        if (!$this->podwladni->contains($podwladni)) {
-            $this->podwladni->add($podwladni);
-            $podwladni->setPrzelozony($this);
-        }
-
-        return $this;
-    }
-
-    public function removePodwladni(self $podwladni): static
-    {
-        if ($this->podwladni->removeElement($podwladni)) {
-            // set the owning side to null (unless already changed)
-            if ($podwladni->getPrzelozony() === $this) {
-                $podwladni->setPrzelozony(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Postepowanie>
-     */
     public function getPostepowaniaProwadzone(): Collection
     {
         return $this->postepowaniaProwadzone;
     }
 
-    public function addPostepowaniaProwadzone(Postepowanie $postepowaniaProwadzone): static
-    {
-        if (!$this->postepowaniaProwadzone->contains($postepowaniaProwadzone)) {
-            $this->postepowaniaProwadzone->add($postepowaniaProwadzone);
-            $postepowaniaProwadzone->setProwadzacy($this);
-        }
-
-        return $this;
-    }
-
-    public function removePostepowaniaProwadzone(Postepowanie $postepowaniaProwadzone): static
-    {
-        if ($this->postepowaniaProwadzone->removeElement($postepowaniaProwadzone)) {
-            // set the owning side to null (unless already changed)
-            if ($postepowaniaProwadzone->getProwadzacy() === $this) {
-                $postepowaniaProwadzone->setProwadzacy(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Postepowanie>
-     */
     public function getApprovedAt(): Collection
     {
         return $this->approvedAt;
     }
 
-    public function addApprovedAt(Postepowanie $approvedAt): static
-    {
-        if (!$this->approvedAt->contains($approvedAt)) {
-            $this->approvedAt->add($approvedAt);
-            $approvedAt->setApprovedBy($this);
-        }
-
-        return $this;
-    }
-
-    public function removeApprovedAt(Postepowanie $approvedAt): static
-    {
-        if ($this->approvedAt->removeElement($approvedAt)) {
-            // set the owning side to null (unless already changed)
-            if ($approvedAt->getApprovedBy() === $this) {
-                $approvedAt->setApprovedBy(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, PostepowaniePracownik>
-     */
     public function getPrzypisaniaDoPostepowan(): Collection
     {
         return $this->przypisaniaDoPostepowan;
     }
+
     public function getMiejsceZatrudnienia(): ?string
     {
         return $this->miejsceZatrudnienia;
@@ -370,37 +243,9 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-    public function addPrzypisaniaDoPostepowan(PostepowaniePracownik $przypisaniaDoPostepowan): static
-    {
-        if (!$this->przypisaniaDoPostepowan->contains($przypisaniaDoPostepowan)) {
-            $this->przypisaniaDoPostepowan->add($przypisaniaDoPostepowan);
-            $przypisaniaDoPostepowan->setPracownik($this);
-        }
-
-        return $this;
-    }
-
-    public function removePrzypisaniaDoPostepowan(PostepowaniePracownik $przypisaniaDoPostepowan): static
-    {
-        if ($this->przypisaniaDoPostepowan->removeElement($przypisaniaDoPostepowan)) {
-            // set the owning side to null (unless already changed)
-            if ($przypisaniaDoPostepowan->getPracownik() === $this) {
-                $przypisaniaDoPostepowan->setPracownik(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function __toString(): string
     {
-        $imie = $this->imie ?? '';
-        $nazwisko = $this->nazwisko ?? '';
-        $email = $this->email ?? '';
-
-        $full = trim($imie.' '.$nazwisko);
-
-        return $full !== '' ? $full.' ('.$email.')' : $email;
+        $full = trim(($this->imie ?? '') . ' ' . ($this->nazwisko ?? ''));
+        return $full !== '' ? $full . ' (' . $this->email . ')' : (string)$this->email;
     }
 }

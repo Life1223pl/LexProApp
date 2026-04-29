@@ -1,25 +1,76 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Rejestracja{% endblock %}
 
 {% block body %}
-    <h1>Register</h1>
+    <div class="container mt-5" style="max-width: 600px;">
 
-    {{ form_errors(registrationForm) }}
+        <div class="card shadow-sm">
+            <div class="card-body">
 
-    {{ form_start(registrationForm) }}
-    {{ form_row(registrationForm.imie) }}
-    {{ form_row(registrationForm.nazwisko) }}
+                <h2 class="mb-4 text-center">Rejestracja</h2>
 
-    {{ form_row(registrationForm.email) }}
-    {{ form_row(registrationForm.miejsceZatrudnienia) }}
+                {{ form_errors(registrationForm) }}
 
-    {{ form_row(registrationForm.plainPassword, {
-        label: 'Password'
-    }) }}
+                {{ form_start(registrationForm) }}
 
-    {{ form_row(registrationForm.agreeTerms) }}
+                <div class="mb-3">
+                    {{ form_label(registrationForm.imie, 'Imię') }}
+                    {{ form_widget(registrationForm.imie, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.imie) }}
+                </div>
 
-    <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
+                <div class="mb-3">
+                    {{ form_label(registrationForm.nazwisko, 'Nazwisko') }}
+                    {{ form_widget(registrationForm.nazwisko, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.nazwisko) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.email, 'Email') }}
+                    {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.miejsceZatrudnienia, 'Miejsce zatrudnienia') }}
+                    {{ form_widget(registrationForm.miejsceZatrudnienia, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.miejsceZatrudnienia) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.plainPassword.first, 'Hasło') }}
+                    {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.plainPassword.first) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.plainPassword.second, 'Powtórz hasło') }}
+                    {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.plainPassword.second) }}
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(registrationForm.agreeTerms, 'Akceptuję regulamin', {'label_attr': {'class': 'form-check-label'}}) }}
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    Zarejestruj się
+                </button>
+
+                {{ form_end(registrationForm) }}
+
+                <div class="text-center mt-3">
+                    <span class="text-muted small">Masz już konto?</span><br>
+                    <a href="{{ path('app_login') }}" class="btn btn-outline-primary btn-sm mt-2">
+                        Zaloguj się
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
 {% endblock %}

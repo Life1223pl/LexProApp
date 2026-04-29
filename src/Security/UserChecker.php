@@ -11,20 +11,21 @@ class UserChecker implements UserCheckerInterface
 {
     public function checkPreAuth(UserInterface $user): void
     {
+        // sprawdzamy tylko naszych użytkowników
         if (!$user instanceof Pracownik) {
             return;
         }
 
-        if (method_exists($user, 'isActive') && !$user->isActive()) {
-            throw new CustomUserMessageAccountStatusException('Konto zostało dezaktywowane.');
-        }
-
-        if (method_exists($user, 'isVerified') && !$user->isVerified()) {
-            throw new CustomUserMessageAccountStatusException('Konto nie zostało jeszcze zatwierdzone przez administratora.');
+        // blokada logowania jeśli konto nieaktywne
+        if (!$user->isActive()) {
+            throw new CustomUserMessageAccountStatusException(
+                'Konto oczekuje na zatwierdzenie przez administratora.'
+            );
         }
     }
 
     public function checkPostAuth(UserInterface $user): void
     {
+        // brak dodatkowych sprawdzeń
     }
 }
