@@ -23,6 +23,7 @@ class PracownikAdminController extends AbstractController
         ]);
     }
 
+
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(
         Pracownik $pracownik,
@@ -33,7 +34,12 @@ class PracownikAdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $data = $request->request->all('admin_pracownik');
+            $pracownik->setIsActive(isset($data['isActive']));
+
             $em->flush();
+
             $this->addFlash('success', 'Zapisano zmiany.');
 
             return $this->redirectToRoute('admin_pracownicy_index');

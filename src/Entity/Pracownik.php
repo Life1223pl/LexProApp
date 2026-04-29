@@ -41,11 +41,9 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $funkcja = null;
 
-    // KLUCZOWE: kontrola dostępu (zatwierdzenie przez admina)
     #[ORM\Column(options: ['default' => false])]
     private bool $isActive = false;
 
-    // opcjonalne (np. email verification)
     #[ORM\Column(options: ['default' => false])]
     private bool $isVerified = false;
 
@@ -101,7 +99,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
@@ -126,7 +123,6 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $data = (array) $this;
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
-
         return $data;
     }
 
@@ -178,8 +174,13 @@ class Pracownik implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // KLUCZOWA METODA (używana w UserChecker)
+    // 🔥 KLUCZOWE METODY (FIX)
     public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
