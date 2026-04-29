@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Postepowanie;
-use App\Entity\PostepowaniePracownik;
 use App\Entity\Pracownik;
 use App\Form\PostepowanieType;
 use App\Repository\PostepowanieRepository;
@@ -14,50 +13,166 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\HistoryLogRepository;
 use App\Repository\PracownikRepository;
+use Knp\Component\Pager\PaginatorInterface;
 
-
-
-
-#[Route('/postepowanie')]
+#[Route('/postepowanie', name: 'app_postepowanie_')]
 final class PostepowanieController extends AbstractController
 {
-    #[Route(name: 'app_postepowanie_index', methods: ['GET'])]
-    public function index(PostepowanieRepository $postepowanieRepository, Request $request): Response
-    {
-        /** @var Pracownik $user */
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(
+        PostepowanieRepository $postepowanieRepository,
+        Request $request,
+        PaginatorInterface $paginator,
+        PracownikRepository $pracownikRepository
+    ): Response {
         $user = $this->getUser();
+        $sort = $request->query->get('sort', 'dataWszczecia');
+        $direction = $request->query->get('direction', 'desc');
 
-        $filter = $request->query->get('filter', 'active'); // active|closed|all
+        $filter = $request->query->get('filter', 'active');
         if (!in_array($filter, ['active', 'closed', 'all'], true)) {
             $filter = 'active';
         }
 
-        $postepowania = $postepowanieRepository->findAccessibleForUserFiltered($user, $filter === 'all' ? null : $filter);
+        $search = $request->query->get('search');
+        $prowadzacyId = $request->query->get('prowadzacy');
+
+        // NOWE: zakres dat
+        $from = $request->query->get('from');
+        $to = $request->query->get('to');
+
+        $postepowania = $postepowanieRepository->findAccessibleForUserFiltered(
+            $user,
+            $filter === 'all' ? null : $filter
+        );
+
+        // SEARCH
+        if ($search) {
+            $searchLower = mb_strtolower($search);
+
+            $postepowania = array_filter($postepowania, function ($p) use ($searchLower) {
+                $numer = (string)$p->getNumer();
+                $opis = mb_strtolower($p->getOpis() ?? '');
+
+                if (ctype_digit($searchLower)) {
+                    return $numer === $searchLower;
+                }
+
+                return str_contains(mb_strtolower($numer), $searchLower)
+                    || str_contains($opis, $searchLower);
+            });
+        }
+
+        // FILTR PROWADZĄCEGO
+        if ($prowadzacyId) {
+            $postepowania = array_filter($postepowania, function ($p) use ($prowadzacyId) {
+                return $p->getProwadzacy()?->getId() == $prowadzacyId;
+            });
+        }
+
+        // NOWE: FILTR DATY WSZCZĘCIA
+        if ($from || $to) {
+            $postepowania = array_filter($postepowania, function ($p) use ($from, $to) {
+
+                $data = $p->getDataWszczecia();
+
+                if (!$data) {
+                    return false;
+                }
+
+                if ($from && $data < new \DateTime($from)) {
+                    return false;
+                }
+
+                if ($to && $data > new \DateTime($to)) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        // SORTOWANIE
+        usort($postepowania, function ($a, $b) use ($sort, $direction) {
+
+            $valueA = null;
+            $valueB = null;
+
+            switch ($sort) {
+                case 'numer':
+                    $valueA = (int)$a->getNumer();
+                    $valueB = (int)$b->getNumer();
+                    break;
+
+                case 'dataWszczecia':
+                    $valueA = $a->getDataWszczecia();
+                    $valueB = $b->getDataWszczecia();
+                    break;
+
+                default:
+                    return 0;
+            }
+
+            if ($valueA == $valueB) {
+                return 0;
+            }
+
+            if ($direction === 'asc') {
+                return $valueA < $valueB ? -1 : 1;
+            }
+
+            return $valueA > $valueB ? -1 : 1;
+        });
+
+
+        // PAGINACJA
+        $pagination = $paginator->paginate(
+            $postepowania,
+            $request->query->getInt('page', 1),
+            5
+        );
 
         return $this->render('postepowanie/index.html.twig', [
-            'postepowanies' => $postepowania,
+            'pagination' => $pagination,
             'filter' => $filter,
+            'search' => $search,
+            'prowadzacySelected' => $prowadzacyId,
+            'pracownicy' => $pracownikRepository->findAll(),
+
+            // NOWE: przekazanie do Twig
+            'from' => $from,
+            'to' => $to,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 
-
-    #[Route('/new', name: 'app_postepowanie_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        /** @var Pracownik $user */
         $user = $this->getUser();
 
         $postepowanie = new Postepowanie();
-
-        // Użytkownik tworzy -> zawsze czeka na zatwierdzenie
         $postepowanie->setStatus(Postepowanie::STATUS_WAITING_APPROVAL);
-
-
         $postepowanie->setProwadzacy($user);
 
-        // Zatwierdzający i data zatwierdzenia są puste do czasu akceptacji przez supervisor
-        $postepowanie->setApprovedBy(null);
-        $postepowanie->setApprovedAt(null);
+        // bezpieczne generowanie numeru
+        $all = $entityManager->getRepository(Postepowanie::class)
+            ->createQueryBuilder('p')
+            ->select('p.numer')
+            ->getQuery()
+            ->getScalarResult();
+
+        $max = 0;
+
+        foreach ($all as $row) {
+            $num = (int)$row['numer'];
+            if ($num > $max) {
+                $max = $num;
+            }
+        }
+
+        $postepowanie->setNumer((string)($max + 1));
 
         $form = $this->createForm(PostepowanieType::class, $postepowanie);
         $form->handleRequest($request);
@@ -66,9 +181,7 @@ final class PostepowanieController extends AbstractController
             $entityManager->persist($postepowanie);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Postępowanie utworzone i wysłane do zatwierdzenia.');
-
-            return $this->redirectToRoute('app_postepowanie_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_postepowanie_index');
         }
 
         return $this->render('postepowanie/new.html.twig', [
@@ -77,50 +190,35 @@ final class PostepowanieController extends AbstractController
         ]);
     }
 
-
-    #[Route('/{id}', name: 'app_postepowanie_show', methods: ['GET'])]
-    public function show(
-        Postepowanie $postepowanie,
-        PostepowanieRepository $postepowanieRepository
-    ): Response {
-        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
-
-
-        $przypisaneOsoby = $postepowanie->getOsoby();
-
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(Postepowanie $postepowanie, PostepowanieRepository $repo): Response
+    {
+        $this->denyUnlessAccessible($postepowanie, $repo);
 
         return $this->render('postepowanie/show.html.twig', [
             'postepowanie' => $postepowanie,
-            'przypisaneOsoby' => $przypisaneOsoby,
+            'przypisaneOsoby' => $postepowanie->getOsoby(),
         ]);
     }
 
-
-
-    #[Route('/{id}/edit', name: 'app_postepowanie_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Postepowanie $postepowanie, PostepowanieRepository $postepowanieRepository, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Postepowanie $postepowanie, PostepowanieRepository $repo, EntityManagerInterface $em): Response
     {
-        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
-
-        /** @var Pracownik $user */
-        $user = $this->getUser();
+        $this->denyUnlessAccessible($postepowanie, $repo);
 
         if (
             !$this->isGranted('ROLE_SUPERVISOR') &&
             $postepowanie->getStatus() === Postepowanie::STATUS_WAITING_DELETE_APPROVAL
         ) {
-            $this->addFlash('success', 'To postępowanie oczekuje na usunięcie i nie może być edytowane.');
             return $this->redirectToRoute('app_postepowanie_show', ['id' => $postepowanie->getId()]);
         }
-
 
         $form = $this->createForm(PostepowanieType::class, $postepowanie);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_postepowanie_index', [], Response::HTTP_SEE_OTHER);
+            $em->flush();
+            return $this->redirectToRoute('app_postepowanie_index');
         }
 
         return $this->render('postepowanie/edit.html.twig', [
@@ -129,129 +227,87 @@ final class PostepowanieController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_postepowanie_delete', methods: ['POST'])]
-    public function delete(
-        Request $request,
-        Postepowanie $postepowanie,
-        PostepowanieRepository $postepowanieRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
-
-        /** @var Pracownik $user */
-        $user = $this->getUser();
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Postepowanie $postepowanie, PostepowanieRepository $repo, EntityManagerInterface $em): Response
+    {
+        $this->denyUnlessAccessible($postepowanie, $repo);
 
         if (!$this->isCsrfTokenValid('delete'.$postepowanie->getId(), $request->getPayload()->getString('_token'))) {
             return $this->redirectToRoute('app_postepowanie_index');
         }
 
-        // Supervisor może usuwać od razu
         if ($this->isGranted('ROLE_SUPERVISOR')) {
-            $entityManager->remove($postepowanie);
-            $entityManager->flush();
-            $this->addFlash('success', 'Postępowanie usunięte.');
+            $em->remove($postepowanie);
+            $em->flush();
             return $this->redirectToRoute('app_postepowanie_index');
         }
 
-        // Pracownik: wniosek o usunięcie
         $postepowanie->setStatus(Postepowanie::STATUS_WAITING_DELETE_APPROVAL);
-        $postepowanie->setDeleteRequestedBy($user);
+        $postepowanie->setDeleteRequestedBy($this->getUser());
         $postepowanie->setDeleteRequestedAt(new \DateTimeImmutable());
 
-        $entityManager->flush();
+        $em->flush();
 
-        $this->addFlash('success', 'Wniosek o usunięcie wysłany do przełożonego.');
-
-        return $this->redirectToRoute('app_postepowanie_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_postepowanie_index');
     }
 
-    #[Route('/postepowanie/{id}/historia', name: 'app_postepowanie_history', methods: ['GET'])]
-    public function history(
-        Postepowanie $postepowanie,
-        PostepowanieRepository $postepowanieRepository,
-        HistoryLogRepository $historyLogRepository,
-        PracownikRepository $pracownikRepository,
-        Request $request
-    ): Response {
-        $this->denyUnlessAccessible($postepowanie, $postepowanieRepository);
+    #[Route('/{id}/historia', name: 'history', methods: ['GET'])]
+    public function history(Postepowanie $postepowanie, PostepowanieRepository $repo, HistoryLogRepository $historyRepo, PracownikRepository $pracownikRepo, Request $request): Response
+    {
+        $this->denyUnlessAccessible($postepowanie, $repo);
 
-        $filters = [
-            'from'   => $request->query->get('from'),
-            'to'     => $request->query->get('to'),
+        $filters = array_filter([
+            'from' => $request->query->get('from'),
+            'to' => $request->query->get('to'),
             'action' => $request->query->get('action'),
             'entity' => $request->query->get('entity'),
-            'user'   => $request->query->get('user'),
-        ];
+            'user' => $request->query->get('user'),
+        ]);
 
-        // wyczyść puste wartości
-        $filters = array_filter($filters, static fn($v) => $v !== null && $v !== '');
-
-        // logi wg filtrów
-        $logs = $historyLogRepository->findForPostepowanieFiltered($postepowanie, $filters, 300);
-
-        // użytkownicy do selecta
-        $users = $pracownikRepository->findAll();
-
-        // obiekty (encje) do selecta - wyciągnięte z bazy dla tego postępowania
-        $entityChoices = $historyLogRepository->findDistinctEntityClassesForPostepowanie($postepowanie);
-
-        $relatedLabels = $historyLogRepository->buildRelatedLabelsForLogs($logs);
+        $logs = $historyRepo->findForPostepowanieFiltered($postepowanie, $filters, 300);
 
         return $this->render('postepowanie/history.html.twig', [
-            'postepowanie'  => $postepowanie,
-            'logs'          => $logs,
-            'filters'       => $filters,
-            'users'         => $users,
-            'entityChoices' => $entityChoices,
-            'relatedLabels' => $relatedLabels,
-
+            'postepowanie' => $postepowanie,
+            'logs' => $logs,
+            'filters' => $filters,
+            'users' => $pracownikRepo->findAll(),
+            'entityChoices' => $historyRepo->findDistinctEntityClassesForPostepowanie($postepowanie),
+            'relatedLabels' => $historyRepo->buildRelatedLabelsForLogs($logs),
         ]);
     }
 
-
-
-    private function denyUnlessAccessible(Postepowanie $postepowanie, PostepowanieRepository $repo): void
-    {
-        /** @var Pracownik $user */
-        $user = $this->getUser();
-
-        if (!$repo->isAccessibleForUser($postepowanie, $user)) {
-            throw $this->createAccessDeniedException();
-        }
-    }
-    #[Route('/postepowanie/{id}/approve', name: 'app_postepowanie_approve', methods: ['POST'])]
+    #[Route('/{id}/approve', name: 'approve', methods: ['POST'])]
     public function approve(Postepowanie $postepowanie, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
 
-        if (!$user instanceof \App\Entity\Pracownik) {
+        if (!$user instanceof Pracownik) {
             throw $this->createAccessDeniedException();
         }
 
-        // musi czekać na zatwierdzenie
-        if ($postepowanie->getStatus() !== \App\Entity\Postepowanie::STATUS_WAITING_APPROVAL) {
-            $this->addFlash('warning', 'To postępowanie nie czeka na zatwierdzenie.');
+        if ($postepowanie->getStatus() !== Postepowanie::STATUS_WAITING_APPROVAL) {
             return $this->redirectToRoute('app_postepowanie_index');
         }
 
-        // HYBRYDA: przełożony prowadzącego albo admin
         $isSupervisor = $postepowanie->getProwadzacy()?->getPrzelozony()?->getId() === $user->getId();
-        $isAdmin = $this->isGranted('ROLE_ADMIN');
 
-        if (!$isSupervisor && !$isAdmin) {
-            throw $this->createAccessDeniedException('Brak uprawnień do zatwierdzania tego postępowania.');
+        if (!$isSupervisor && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
         }
 
-        $postepowanie->setStatus(\App\Entity\Postepowanie::STATUS_APPROVED);
+        $postepowanie->setStatus(Postepowanie::STATUS_APPROVED);
         $postepowanie->setApprovedBy($user);
         $postepowanie->setApprovedAt(new \DateTimeImmutable());
 
         $em->flush();
 
-        $this->addFlash('success', 'Postępowanie zostało zatwierdzone.');
         return $this->redirectToRoute('app_postepowanie_index');
     }
 
-
-
+    private function denyUnlessAccessible(Postepowanie $postepowanie, PostepowanieRepository $repo): void
+    {
+        if (!$repo->isAccessibleForUser($postepowanie, $this->getUser())) {
+            throw $this->createAccessDeniedException();
+        }
+    }
 }

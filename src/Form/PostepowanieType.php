@@ -18,7 +18,9 @@ class PostepowanieType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('numer', TextType::class)
+            ->add('numer', null, [
+                'disabled' => true,
+            ])
             ->add('rodzaj', ChoiceType::class, [
                 'label' => 'Rodzaj postępowania',
                 'choices' => [

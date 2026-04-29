@@ -2,105 +2,102 @@
 
 {% block title %}Historia zmian - Postępowanie {{ postepowanie.numer }}{% endblock %}
 
-{% block body %}
-    <div class="container mt-4">
+{% block body %} <div class="container mt-4">
 
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <h1 class="mb-1">Historia zmian</h1>
-                <div class="text-muted">
-                    Postępowanie: <strong>{{ postepowanie.numer }}</strong>
-                </div>
+    ```
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="mb-1">Historia zmian</h1>
+            <div class="text-muted">
+                Postępowanie: <strong>{{ postepowanie.numer }}</strong>
             </div>
-
-            <a class="btn btn-outline-secondary"
-               href="{{ path('app_postepowanie_show', { id: postepowanie.id }) }}">
-                ← Wróć do postępowania
-            </a>
         </div>
 
-        {# czytelne nazwy encji #}
-        {% set entityNiceNames = {
-            'App\\Entity\\Postepowanie': 'Postępowanie',
-            'App\\Entity\\PostepowanieOsoba': 'Osoba w postępowaniu',
-            'App\\Entity\\Czynnosc': 'Czynność',
-            'App\\Entity\\PostepowaniePracownik': 'Pracownik w postępowaniu',
-            'App\\Entity\\CzynnoscUczestnik': 'Uczestnik czynności'
-        } %}
+        <a class="btn btn-outline-secondary"
+           href="{{ path('app_postepowanie_show', { id: postepowanie.id }) }}">
+            ← Wróć do postępowania
+        </a>
+    </div>
 
-        {# etykiety pól per encja #}
-        {% set fieldLabelsByClass = {
-            'App\\Entity\\Postepowanie': {
-                'numer': 'Numer postępowania',
-                'rodzaj': 'Rodzaj postępowania',
-                'dataWszczecia': 'Data wszczęcia',
-                'dataZakonczenia': 'Data zakończenia',
-                'status': 'Status',
-                'opis': 'Opis',
-                'glownyArtykulSprawy': 'Główny artykuł sprawy'
-            },
-            'App\\Entity\\PostepowanieOsoba': {
-                'osoba': 'Osoba',
-                'rola': 'Rola',
-                'pouczonyOdpowiedzialnoscKarna': 'Pouczenie karne'
-            },
-            'App\\Entity\\Czynnosc': {
-                'typ': 'Typ czynności',
-                'glownaOsoba': 'Główna osoba',
-                'dataStart': 'Data rozpoczęcia',
-                'dataKoniec': 'Data zakończenia'
-            },
-            'App\\Entity\\PostepowaniePracownik': {
-                'pracownik': 'Pracownik',
-                'rola': 'Rola'
-            },
-            'App\\Entity\\CzynnoscUczestnik': {
-                'osoba': 'Osoba',
-                'pracownik': 'Pracownik',
-                'rola': 'Rola',
-                'opisRoli': 'Opis roli'
-            }
-        } %}
+    {% set entityNiceNames = {
+        'App\\Entity\\Postepowanie': 'Postępowanie',
+        'App\\Entity\\PostepowanieOsoba': 'Osoba w postępowaniu',
+        'App\\Entity\\Czynnosc': 'Czynność',
+        'App\\Entity\\PostepowaniePracownik': 'Pracownik w postępowaniu',
+        'App\\Entity\\CzynnoscUczestnik': 'Uczestnik czynności'
+    } %}
 
-        {# mapy enumów #}
-        {% set enumMaps = {
-            'rodzaj': {'dochodzenie':'Dochodzenie','sledztwo':'Śledztwo'},
-            'typ': {'ogledziny':'Oględziny','przeszukanie':'Przeszukanie'},
-            'rodzaj': {
-                'dochodzenie': 'Dochodzenie',
-                'sledztwo': 'Śledztwo',
-                'wykroczenie': 'Postępowanie o wykroczenie'
-            }
+    {% set fieldLabelsByClass = {
+        'App\\Entity\\Postepowanie': {
+            'numer': 'Numer postępowania',
+            'rodzaj': 'Rodzaj postępowania',
+            'dataWszczecia': 'Data wszczęcia',
+            'dataZakonczenia': 'Data zakończenia',
+            'status': 'Status',
+            'opis': 'Opis',
+            'glownyArtykulSprawy': 'Główny artykuł sprawy'
+        },
+        'App\\Entity\\PostepowanieOsoba': {
+            'osoba': 'Osoba',
+            'rola': 'Rola',
+            'pouczonyOdpowiedzialnoscKarna': 'Pouczenie karne'
+        },
+        'App\\Entity\\Czynnosc': {
+            'typ': 'Typ czynności',
+            'glownaOsoba': 'Główna osoba',
+            'dataStart': 'Data rozpoczęcia',
+            'dataKoniec': 'Data zakończenia'
+        },
+        'App\\Entity\\PostepowaniePracownik': {
+            'pracownik': 'Pracownik',
+            'rola': 'Rola'
+        },
+        'App\\Entity\\CzynnoscUczestnik': {
+            'osoba': 'Osoba',
+            'pracownik': 'Pracownik',
+            'rola': 'Rola',
+            'opisRoli': 'Opis roli'
+        }
+    } %}
 
-        } %}
+    {% set enumMaps = {
+        'typ': {'ogledziny':'Oględziny','przeszukanie':'Przeszukanie'},
+        'rodzaj': {
+            'dochodzenie': 'Dochodzenie',
+            'sledztwo': 'Śledztwo',
+            'wykroczenie': 'Postępowanie o wykroczenie'
+        }
+    } %}
 
-        {# makro do ładnego formatowania wartości #}
-        {% macro prettyValue(field, v, enumMaps, relatedLabels) %}
-            {% if v is same as(true) %}
-                Tak
-            {% elseif v is same as(false) %}
-                Nie
-            {% elseif v is same as(null) %}
-                —
-            {% elseif v is iterable %}
+    {% macro prettyValue(field, v, enumMaps, relatedLabels) %}
+        {% if v is same as(true) %}
+            Tak
+        {% elseif v is same as(false) %}
+            Nie
+        {% elseif v is same as(null) %}
+            —
+        {% elseif v is iterable %}
 
-                {% if v.id is defined and v.class is defined %}
-                    {% set key = v.class ~ '#' ~ v.id %}
-                    {{ relatedLabels[key] ?? ((v.class|split('\\\\')|last) ~ ' (ID: ' ~ v.id ~ ')') }}
+            {% if v.id is defined and v.class is defined %}
+                {% set key = v.class ~ '#' ~ v.id %}
+                {{ relatedLabels[key] ?? ((v.class|split('\\\\')|last) ~ ' (ID: ' ~ v.id ~ ')') }}
 
+            {% elseif v.label is defined and v.label %}
+                {{ v.label }}
 
-                {% elseif v.label is defined and v.label %}
-                    {{ v.label }}
-
-                {% elseif v.value is defined %}
-                    {{ _self.prettyValue(field, v.value, enumMaps, relatedLabels) }}
-                {% elseif v.name is defined %}
-                    {{ _self.prettyValue(field, v.name, enumMaps, relatedLabels) }}
-                {% else %}
-                    {{ v|json_encode }}
-                {% endif %}
+            {% elseif v.value is defined %}
+                {{ _self.prettyValue(field, v.value, enumMaps, relatedLabels) }}
+            {% elseif v.name is defined %}
+                {{ _self.prettyValue(field, v.name, enumMaps, relatedLabels) }}
             {% else %}
-                {% set s = v ~ '' %}
+                {{ v|json_encode }}
+            {% endif %}
+        {% else %}
+            {% set s = v ~ '' %}
+
+            {% if field == 'status' %}
+                {{ s|status_pl }}
+            {% else %}
                 {% set lower = s|lower %}
 
                 {% if enumMaps[field] is defined and enumMaps[field][lower] is defined %}
@@ -111,161 +108,161 @@
                     {{ s }}
                 {% endif %}
             {% endif %}
-        {% endmacro %}
-
-
-        {% import _self as fmt %}
-
-        {# FILTRY (GET) #}
-        <form method="get" class="card mb-3 p-3">
-            <div class="row g-2 align-items-end">
-                <div class="col-md-2">
-                    <label class="form-label small mb-1">Od (data)</label>
-                    <input type="date" name="from" value="{{ filters.from ?? '' }}" class="form-control form-control-sm">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small mb-1">Do (data)</label>
-                    <input type="date" name="to" value="{{ filters.to ?? '' }}" class="form-control form-control-sm">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small mb-1">Akcja</label>
-                    <select name="action" class="form-select form-select-sm">
-                        <option value="">Wszystkie</option>
-                        <option value="CREATE" {{ (filters.action ?? '') == 'CREATE' ? 'selected' : '' }}>CREATE</option>
-                        <option value="UPDATE" {{ (filters.action ?? '') == 'UPDATE' ? 'selected' : '' }}>UPDATE</option>
-                        <option value="DELETE" {{ (filters.action ?? '') == 'DELETE' ? 'selected' : '' }}>DELETE</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">Obiekt</label>
-                    <select name="entity" class="form-select form-select-sm">
-                        <option value="">Wszystkie</option>
-                        {% for cls in entityChoices %}
-                            {% set nice = entityNiceNames[cls] ?? (cls|split('\\\\')|last) %}
-                            <option value="{{ cls }}" {{ (filters.entity ?? '') == cls ? 'selected' : '' }}>
-                                {{ nice }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">Użytkownik</label>
-                    <select name="user" class="form-select form-select-sm">
-                        <option value="">Wszyscy</option>
-                        {% for u in users %}
-                            <option value="{{ u.id }}" {{ (filters.user ?? '') == (u.id ~ '') ? 'selected' : '' }}>
-                                {{ u }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-12 d-flex gap-2 mt-2">
-                    <button class="btn btn-sm btn-primary" type="submit">Filtruj</button>
-                    <a class="btn btn-sm btn-outline-secondary"
-                       href="{{ path('app_postepowanie_history', {id: postepowanie.id}) }}">
-                        Wyczyść
-                    </a>
-                </div>
-            </div>
-        </form>
-
-        {% if logs is empty %}
-            <div class="alert alert-info">Brak wpisów w historii.</div>
-        {% else %}
-            <div class="card">
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0 align-middle">
-                        <thead>
-                        <tr>
-                            <th style="width:170px;">Kiedy</th>
-                            <th style="width:240px;">Kto</th>
-                            <th style="width:220px;">Akcja</th>
-                            <th style="width:220px;">Obiekt</th>
-                            <th>Opis</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for log in logs %}
-                            {% set labels = fieldLabelsByClass[log.entityClass] ?? {} %}
-                            {% set parts = [] %}
-                            {% set hidden = ['id','createdAt','updatedAt','postepowanie','dane','czynnosc'] %}
-
-                            {% if log.changes %}
-                                {% for field, ch in log.changes %}
-                                    {% if field not in hidden %}
-                                        {% set label = labels[field] ?? field %}
-                                        {% set oldVal = fmt.prettyValue(field, ch.old, enumMaps, relatedLabels|default({})) %}
-                                        {% set newVal = fmt.prettyValue(field, ch.new, enumMaps, relatedLabels|default({})) %}
-                                        {% set parts = parts|merge([ label ~ ': ' ~ oldVal ~ ' → ' ~ newVal ]) %}
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-
-                            {% set action = log.action %}
-                            {% set badge = action == 'CREATE'
-                                ? 'success'
-                                : (action == 'DELETE' ? 'danger' : 'warning')
-                            %}
-
-                            {% set entityLabel = entityNiceNames[log.entityClass] ?? (log.entityClass|split('\\\\')|last) %}
-
-                            <tr>
-                                <td class="text-nowrap">{{ log.occurredAt|date('Y-m-d H:i') }}</td>
-
-                                <td>
-                                    {% if log.user %}
-                                        <div>{{ log.user }}</div>
-                                    {% else %}
-                                        <span class="text-muted">system</span>
-                                    {% endif %}
-                                </td>
-
-                                <td>
-                                    {# dot. trybu daltonisty: nie opieramy się tylko na kolorze (ikona + tekst) #}
-                                    {% set actionLabel = action == 'CREATE'
-                                        ? 'Utworzono'
-                                        : (action == 'DELETE' ? 'Usunięto' : 'Zmieniono')
-                                    %}
-                                    {% set actionIcon = action == 'CREATE'
-                                        ? '＋'
-                                        : (action == 'DELETE' ? '🗑' : '✎')
-                                    %}
-
-                                    <span class="badge bg-{{ badge }}">
-                                        {{ actionIcon }} {{ actionLabel }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <div class="small">
-                                        <div><strong>{{ entityLabel }}</strong></div>
-                                        <div class="text-muted">ID: {{ log.entityId ?? '—' }}</div>
-                                    </div>
-                                </td>
-
-                                <td class="small">
-                                    {% if parts|length %}
-                                        <ul class="mb-0 ps-3">
-                                            {% for p in parts %}
-                                                <li>{{ p }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         {% endif %}
+    {% endmacro %}
 
-    </div>
+    {% import _self as fmt %}
+
+    <form method="get" class="card mb-3 p-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Od (data)</label>
+                <input type="date" name="from" value="{{ filters.from ?? '' }}" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Do (data)</label>
+                <input type="date" name="to" value="{{ filters.to ?? '' }}" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Akcja</label>
+                <select name="action" class="form-select form-select-sm">
+                    <option value="">Wszystkie</option>
+                    <option value="CREATE" {{ (filters.action ?? '') == 'CREATE' ? 'selected' : '' }}>CREATE</option>
+                    <option value="UPDATE" {{ (filters.action ?? '') == 'UPDATE' ? 'selected' : '' }}>UPDATE</option>
+                    <option value="DELETE" {{ (filters.action ?? '') == 'DELETE' ? 'selected' : '' }}>DELETE</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Obiekt</label>
+                <select name="entity" class="form-select form-select-sm">
+                    <option value="">Wszystkie</option>
+                    {% for cls in entityChoices %}
+                        {% set nice = entityNiceNames[cls] ?? (cls|split('\\\\')|last) %}
+                        <option value="{{ cls }}" {{ (filters.entity ?? '') == cls ? 'selected' : '' }}>
+                            {{ nice }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Użytkownik</label>
+                <select name="user" class="form-select form-select-sm">
+                    <option value="">Wszyscy</option>
+                    {% for u in users %}
+                        <option value="{{ u.id }}" {{ (filters.user ?? '') == (u.id ~ '') ? 'selected' : '' }}>
+                            {{ u }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-primary" type="submit">Filtruj</button>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('app_postepowanie_history', {id: postepowanie.id}) }}">
+                    Wyczyść
+                </a>
+            </div>
+        </div>
+    </form>
+
+    {% if logs is empty %}
+        <div class="alert alert-info">Brak wpisów w historii.</div>
+    {% else %}
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0 align-middle">
+                    <thead>
+                    <tr>
+                        <th style="width:170px;">Kiedy</th>
+                        <th style="width:240px;">Kto</th>
+                        <th style="width:220px;">Akcja</th>
+                        <th style="width:220px;">Obiekt</th>
+                        <th>Opis</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in logs %}
+                        {% set labels = fieldLabelsByClass[log.entityClass] ?? {} %}
+                        {% set parts = [] %}
+                        {% set hidden = ['id','createdAt','updatedAt','postepowanie','dane','czynnosc'] %}
+
+                        {% if log.changes %}
+                            {% for field, ch in log.changes %}
+                                {% if field not in hidden %}
+                                    {% set label = labels[field] ?? field %}
+                                    {% set oldVal = fmt.prettyValue(field, ch.old, enumMaps, relatedLabels|default({})) %}
+                                    {% set newVal = fmt.prettyValue(field, ch.new, enumMaps, relatedLabels|default({})) %}
+                                    {% set parts = parts|merge([ label ~ ': ' ~ oldVal ~ ' → ' ~ newVal ]) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% set action = log.action %}
+                        {% set badge = action == 'CREATE'
+                            ? 'success'
+                            : (action == 'DELETE' ? 'danger' : 'warning')
+                        %}
+
+                        {% set entityLabel = entityNiceNames[log.entityClass] ?? (log.entityClass|split('\\\\')|last) %}
+
+                        <tr>
+                            <td class="text-nowrap">{{ log.occurredAt|date('Y-m-d H:i') }}</td>
+
+                            <td>
+                                {% if log.user %}
+                                    <div>{{ log.user }}</div>
+                                {% else %}
+                                    <span class="text-muted">system</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% set actionLabel = action == 'CREATE'
+                                    ? 'Utworzono'
+                                    : (action == 'DELETE' ? 'Usunięto' : 'Zmieniono')
+                                %}
+                                {% set actionIcon = action == 'CREATE'
+                                    ? '＋'
+                                    : (action == 'DELETE' ? '🗑' : '✎')
+                                %}
+
+                                <span class="badge bg-{{ badge }}">
+                                    {{ actionIcon }} {{ actionLabel }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="small">
+                                    <div><strong>{{ entityLabel }}</strong></div>
+                                    <div class="text-muted">ID: {{ log.entityId ?? '—' }}</div>
+                                </div>
+                            </td>
+
+                            <td class="small">
+                                {% if parts|length %}
+                                    <ul class="mb-0 ps-3">
+                                        {% for p in parts %}
+                                            <li>{{ p }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+    ```
+
 {% endblock %}

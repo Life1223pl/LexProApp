@@ -1,0 +1,49 @@
+<nav>
+    <ul class="pagination mb-0">
+
+        {# Poprzednia #}
+        {% if previous is defined %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="{{ path(route, query|merge({(pageParameterName): previous})) }}">
+                    ← Poprzednia
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">← Poprzednia</span>
+            </li>
+        {% endif %}
+
+        {# Numery stron #}
+        {% for page in pagesInRange %}
+            {% if page == current %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page }}</span>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ path(route, query|merge({(pageParameterName): page})) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {# Następna #}
+        {% if next is defined %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="{{ path(route, query|merge({(pageParameterName): next})) }}">
+                    Następna →
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Następna →</span>
+            </li>
+        {% endif %}
+
+    </ul>
+</nav>
