@@ -1,13 +1,71 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Postepowanie{% endblock %}
+{% block title %}Edycja postępowania{% endblock %}
 
 {% block body %}
-    <h1>Edit Postepowanie</h1>
+    <div class="container">
 
-    {{ include('postepowanie/_form.html.twig', {'button_label': 'Update'}) }}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Edycja postępowania</h1>
 
-    <a href="{{ path('app_postepowanie_index') }}">back to list</a>
+            <a href="{{ path('app_postepowanie_index') }}"
+               class="btn btn-outline-secondary">
+                ← Powrót do listy
+            </a>
+        </div>
 
-    {{ include('postepowanie/_delete_form.html.twig') }}
+        <div class="card p-4">
+
+            {{ form_start(form) }}
+
+            <div class="row">
+
+                <div class="col-md-6">
+                    {{ form_row(form.numer) }}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_row(form.rodzaj) }}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_row(form.dataWszczecia) }}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_row(form.dataZakonczenia) }}
+                </div>
+
+                <div class="col-md-12">
+                    {{ form_row(form.glownyArtykulSprawy) }}
+                </div>
+
+                <div class="col-md-12">
+                    {{ form_row(form.opis) }}
+                </div>
+
+            </div>
+
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+
+                <div class="d-flex gap-2">
+                    {{ form_widget(form.save) }}
+
+                    <a href="{{ path('app_postepowanie_show', {'id': postepowanie.id}) }}"
+                       class="btn btn-outline-secondary">
+                        Anuluj
+                    </a>
+                </div>
+
+                <div>
+                    {{ include('postepowanie/_delete_form.html.twig') }}
+                </div>
+
+            </div>
+
+            {{ form_end(form) }}
+
+        </div>
+
+    </div>
 {% endblock %}

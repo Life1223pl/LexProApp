@@ -17,12 +17,12 @@ class StatusExtension extends AbstractExtension
     public function translateStatus(?string $status): string
     {
         return match ($status) {
-            'WAITING_APPROVAL' => 'Oczekuje na zatwierdzenie',
-            'APPROVED' => 'Zatwierdzone',
-            'REJECTED' => 'Odrzucone',
-            'CLOSED' => 'Zamknięte',
-            'WAITING_DELETE_APPROVAL' => 'Oczekuje na zgodę usunięcia',
-            'DELETE_REJECTED' => 'Odrzucono usunięcie',
+            'WAITING_APPROVAL' => '⏳ Oczekuje na zatwierdzenie',
+            'APPROVED' => '✔ Zatwierdzone',
+            'REJECTED' => '✖ Odrzucone',
+            'CLOSED' => '✔ Zamknięte',
+            'WAITING_DELETE_APPROVAL' => '🗑 Oczekuje na zgodę usunięcia',
+            'DELETE_REJECTED' => '✖ Odrzucono usunięcie',
             default => $status ?? '-',
         };
     }

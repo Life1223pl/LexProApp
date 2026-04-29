@@ -1,36 +1,91 @@
-/* Tryb daltonistyczny - wyższy kontrast i color-safe */
+/* Tryb daltonisty - wyższy kontrast i color-safe */
 .a11y-colorblind {
-    --a11y-success: #009E73;
+    --a11y-success: #0072B2;  /* nie zielony → niebieski */
     --a11y-warning: #E69F00;
-    --a11y-danger:  #D55E00;
-    --a11y-info:    #0072B2;
+    --a11y-danger:  #6c757d;  /* zamiast czerwonego → szary */
+    --a11y-info:    #009E73;
 }
 
-/* Badge -  color-safe */
+/* =========================
+   BADGE
+========================= */
+
+.a11y-colorblind .badge {
+    border: 2px solid #000;
+    font-weight: 600;
+}
+
 .a11y-colorblind .badge.bg-success { background-color: var(--a11y-success) !important; }
 .a11y-colorblind .badge.bg-warning { background-color: var(--a11y-warning) !important; color: #111 !important; }
 .a11y-colorblind .badge.bg-danger  { background-color: var(--a11y-danger) !important; }
 .a11y-colorblind .badge.bg-info    { background-color: var(--a11y-info) !important; }
 
-/* Wysoki kontrast fokusów - dla dostępności */
+/* =========================
+   PRZYCISKI
+========================= */
+
+.a11y-colorblind .btn {
+    border: 2px solid #000 !important;
+    font-weight: 600;
+}
+
+.a11y-colorblind .btn-success {
+    background-color: var(--a11y-success) !important;
+}
+
+.a11y-colorblind .btn-danger {
+    background-color: var(--a11y-danger) !important;
+}
+
+.a11y-colorblind .btn-warning {
+    background-color: var(--a11y-warning) !important;
+    color: #000 !important;
+}
+
+/* =========================
+   ALERTY
+========================= */
+
+.a11y-colorblind .alert {
+    border: 2px solid #000;
+    font-weight: 500;
+}
+
+.a11y-colorblind .alert-success {
+    background-color: #cfe2ff !important;
+    color: #000 !important;
+}
+
+.a11y-colorblind .alert-danger {
+    background-color: #e2e3e5 !important;
+    color: #000 !important;
+}
+
+/* =========================
+   FOCUS (dostępność)
+========================= */
+
 .a11y-colorblind :focus {
     outline: 3px solid #000 !important;
     outline-offset: 2px;
 }
+
 .a11y-colorblind .btn:focus,
 .a11y-colorblind .form-control:focus,
 .a11y-colorblind .form-select:focus {
     box-shadow: none !important;
 }
 
-/* Dodatkowe wzmocnienie: obramowanie dla badge */
-.a11y-colorblind .badge {
-    border: 1px solid rgba(0,0,0,.25);
+/* =========================
+   TABELA
+========================= */
+
+.a11y-colorblind table {
+    border: 2px solid #000;
 }
 
-/* delikatne tła */
-.a11y-colorblind .card {
-    background-color: #f8f9fa;
+.a11y-colorblind tr {
+    border-bottom: 1px solid #000;
 }
 
 .a11y-colorblind .table-striped > tbody > tr:nth-of-type(odd) {
@@ -41,3 +96,42 @@
     background-color: #ffffff;
 }
 
+/* =========================
+   KARTY
+========================= */
+
+.a11y-colorblind .card {
+    background-color: #f8f9fa;
+    border: 2px solid #000;
+}
+
+.a11y-colorblind .badge.bg-success {
+    border: 2px solid #000;
+    border-left: 6px solid #000;
+}
+
+.a11y-colorblind .badge.bg-warning {
+    border: 2px dashed #000;
+}
+
+.a11y-colorblind .badge.bg-secondary {
+    border: 2px dotted #000;
+}
+
+.a11y-colorblind .btn-success {
+    background-color: #0072B2 !important;
+    border: 2px solid #000 !important;
+}
+
+.a11y-colorblind .btn-danger {
+    background-color: #6c757d !important;
+    border: 2px dashed #000 !important;
+}
+.a11y-colorblind a {
+    text-decoration: underline;
+    font-weight: 600;
+}
+.a11y-colorblind {
+    color: #000;
+    background-color: #fff;
+}

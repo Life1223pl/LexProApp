@@ -81,7 +81,6 @@
                 <tr>
                     <th>Lp</th>
 
-                    {# SORT NUMER #}
                     <th>
                         {% set isSorted = sort == 'numer' %}
                         <a class="sort-link"
@@ -99,7 +98,6 @@
                     <th>Prowadzący</th>
                     <th>Rodzaj</th>
 
-                    {# SORT DATA #}
                     <th>
                         {% set isSorted = sort == 'dataWszczecia' %}
                         <a class="sort-link"
@@ -122,8 +120,7 @@
 
                 <tbody>
                 {% for postepowanie in pagination %}
-                    {% set waitingDelete = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
-                    {% set waitingApprove = postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') %}
+                    {% set status = postepowanie.status %}
                     {% set canApprove = is_granted('ROLE_ADMIN') or is_granted('ROLE_SUPERVISOR') %}
 
                     <tr>
@@ -138,15 +135,15 @@
                         <td>{{ postepowanie.dataZakonczenia ? postepowanie.dataZakonczenia|date('Y-m-d') : '-' }}</td>
 
                         <td>
-                            {% if waitingDelete %}
-                                <span class="badge bg-warning text-dark">Oczekuje na usunięcie</span>
-                            {% elseif postepowanie.status == constant('App\\Entity\\Postepowanie::STATUS_APPROVED') %}
-                                <span class="badge bg-success">Zatwierdzone</span>
-                            {% elseif waitingApprove %}
-                                <span class="badge bg-secondary">Oczekuje</span>
-                            {% else %}
-                                <span class="badge bg-light text-dark">{{ postepowanie.status|status_pl }}</span>
-                            {% endif %}
+                            <span class="badge
+                                {% if status == constant('App\\Entity\\Postepowanie::STATUS_APPROVED') %}bg-success
+                                {% elseif status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') %}bg-secondary
+                                {% elseif status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}bg-warning text-dark
+                                {% else %}bg-light text-dark
+                                {% endif %}
+                            ">
+                                {{ status|status_pl }}
+                            </span>
                         </td>
 
                         <td class="text-end">
@@ -157,7 +154,7 @@
                                     Podgląd
                                 </a>
 
-                                {% if waitingApprove and canApprove %}
+                                {% if status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_APPROVAL') and canApprove %}
                                     <form method="post"
                                           action="{{ path('app_postepowanie_approve', {'id': postepowanie.id}) }}"
                                           onsubmit="return confirm('Na pewno zatwierdzić?');">
@@ -166,7 +163,7 @@
                                     </form>
                                 {% endif %}
 
-                                {% if not waitingDelete %}
+                                {% if status != constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
                                     <a class="btn btn-outline-secondary"
                                        href="{{ path('app_postepowanie_edit', {'id': postepowanie.id }) }}">
                                         Edytuj
@@ -178,11 +175,15 @@
                                       onsubmit="return confirm('Czy na pewno?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ postepowanie.id) }}">
                                     <button class="btn btn-outline-danger"
-                                            {% if waitingDelete and not is_granted('ROLE_SUPERVISOR') %}disabled{% endif %}>
+                                            {% if status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') and not is_granted('ROLE_SUPERVISOR') %}disabled{% endif %}>
                                         {% if is_granted('ROLE_SUPERVISOR') %}
                                             Usuń
                                         {% else %}
-                                            {% if waitingDelete %}Wysłano{% else %}Zgłoś usunięcie{% endif %}
+                                            {% if status == constant('App\\Entity\\Postepowanie::STATUS_WAITING_DELETE_APPROVAL') %}
+                                                Wysłano
+                                            {% else %}
+                                                Zgłoś usunięcie
+                                            {% endif %}
                                         {% endif %}
                                     </button>
                                 </form>

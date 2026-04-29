@@ -36,6 +36,7 @@
                     <table class="table table-striped table-hover align-middle mb-0">
                         <thead class="table-light">
                         <tr>
+                            <th>Lp</th>
                             <th>Osoba</th>
                             <th>Rola</th>
                             <th>Pouczenie</th>
@@ -43,23 +44,33 @@
                             <th class="text-end">Akcje</th>
                         </tr>
                         </thead>
+
                         <tbody>
                         {% for po in osoby %}
                             <tr>
+                                <td>{{ loop.index }}</td>
+
                                 <td class="fw-semibold">{{ po.osoba }}</td>
-                                <td><span class="badge bg-primary">{{ po.rola }}</span></td>
+
+                                <td>
+                                    <span class="badge bg-primary">{{ po.rola }}</span>
+                                </td>
+
                                 <td>
                                     {% if po.pouczonyOdpowiedzialnoscKarna %}
-                                        <span class="badge bg-success">TAK</span>
+                                        <span class="badge bg-success">✔ TAK</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">NIE</span>
+                                        <span class="badge bg-secondary">✖ NIE</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-muted small">{{ po.notatki ?: '-' }}</td>
+
+                                <td class="text-muted small">
+                                    {{ po.notatki ?: '-' }}
+                                </td>
+
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2">
 
-                                        {# Edytuj dane OSOBY (globalnie) + zachowaj kontekst postępowania #}
                                         {% if is_granted('ROLE_ADMIN') %}
                                             <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('admin_osoba_edit', { id: po.osoba.id, postepowanie: postepowanie.id }) }}">
@@ -72,13 +83,14 @@
                                             </a>
                                         {% endif %}
 
-                                        {# Usuń tylko przypięcie do postępowania #}
                                         <form method="post"
                                               action="{{ path('app_postepowanie_osoby_remove', { id: postepowanie.id, poId: po.id }) }}"
                                               onsubmit="return confirm('Usunąć tę osobę z postępowania?');"
                                               style="display:inline-block">
                                             <input type="hidden" name="_token" value="{{ csrf_token('remove_po_' ~ po.id) }}">
-                                            <button class="btn btn-sm btn-outline-danger" type="submit">Usuń z postępowania</button>
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                Usuń z postępowania
+                                            </button>
                                         </form>
 
                                     </div>
@@ -86,7 +98,7 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
+                                <td colspan="6" class="text-center text-muted py-4">
                                     Brak osób przypiętych do postępowania.
                                 </td>
                             </tr>
