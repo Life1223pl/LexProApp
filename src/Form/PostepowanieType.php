@@ -18,6 +18,30 @@ class PostepowanieType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var Pracownik|null $user */
+        $user = $options['user'];
+
+        /** @var Postepowanie $postepowanie */
+        $postepowanie = $options['data'];
+
+        // 🔥 lista prowadzących
+        if ($user && in_array('ROLE_SUPERVISOR', $user->getRoles(), true)) {
+            $prowadzacyChoices = $user->getPodwladni()->toArray();
+        } else {
+            $prowadzacyChoices = $options['pracownicy'];
+        }
+
+        // 🔥 dodaj aktualnego prowadzącego jeśli nie ma na liście
+        if (
+            $postepowanie->getProwadzacy()
+            && !in_array($postepowanie->getProwadzacy(), $prowadzacyChoices, true)
+        ) {
+            $prowadzacyChoices[] = $postepowanie->getProwadzacy();
+        }
+
+        // 🔥 KLUCZOWE — reset indeksów
+        $prowadzacyChoices = array_values($prowadzacyChoices);
+
         $builder
             ->add('numer', null, [
                 'label' => 'Numer postępowania',
@@ -27,8 +51,14 @@ class PostepowanieType extends AbstractType
 
             ->add('prowadzacy', EntityType::class, [
                 'class' => Pracownik::class,
-                'choice_label' => fn($p) => $p->getImie().' '.$p->getNazwisko(),
-                'disabled' => false,
+                'choices' => $prowadzacyChoices,
+                'choice_label' => fn(Pracownik $p) =>
+                    $p->getImie() . ' ' . $p->getNazwisko(),
+                'placeholder' => '— wybierz prowadzącego —',
+
+                'mapped' => false,
+
+                'required' => true,
                 'attr' => ['class' => 'form-select'],
             ])
 
@@ -65,7 +95,7 @@ class PostepowanieType extends AbstractType
 
             ->add('save', SubmitType::class, [
                 'label' => 'Zapisz zmiany',
-                'attr' => ['class' => 'btn btn-primary']
+                'attr' => ['class' => 'btn btn-primary'],
             ]);
     }
 
@@ -73,7 +103,11 @@ class PostepowanieType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Postepowanie::class,
-            'is_supervisor' => false,
+            'pracownicy' => [],
+            'user' => null,
+
+            // 🔥 KLUCZOWE
+            'csrf_protection' => false,
         ]);
     }
 }

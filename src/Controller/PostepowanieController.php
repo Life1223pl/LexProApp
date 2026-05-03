@@ -18,6 +18,7 @@ use Knp\Component\Pager\PaginatorInterface;
 #[Route('/postepowanie', name: 'app_postepowanie_')]
 final class PostepowanieController extends AbstractController
 {
+
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(
         PostepowanieRepository $repo,
@@ -219,6 +220,36 @@ final class PostepowanieController extends AbstractController
         return $this->redirectToRoute('app_postepowanie_index');
     }
 
+    #[Route('/{id}/historia', name: 'history', methods: ['GET'])]
+    public function history(
+        Postepowanie $postepowanie,
+        PostepowanieRepository $repo,
+        HistoryLogRepository $historyRepo,
+        PracownikRepository $pracownikRepo,
+        Request $request
+    ): Response {
+        $this->denyUnlessAccessible($postepowanie, $repo);
+
+        $filters = array_filter([
+            'from' => $request->query->get('from'),
+            'to' => $request->query->get('to'),
+            'action' => $request->query->get('action'),
+            'entity' => $request->query->get('entity'),
+            'user' => $request->query->get('user'),
+        ]);
+
+        $logs = $historyRepo->findForPostepowanieFiltered($postepowanie, $filters, 300);
+
+        return $this->render('postepowanie/history.html.twig', [
+            'postepowanie' => $postepowanie,
+            'logs' => $logs,
+            'filters' => $filters,
+            'users' => $pracownikRepo->findAll(),
+            'entityChoices' => $historyRepo->findDistinctEntityClassesForPostepowanie($postepowanie),
+            'relatedLabels' => $historyRepo->buildRelatedLabelsForLogs($logs),
+        ]);
+    }
+
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(
         Request $request,
@@ -228,11 +259,31 @@ final class PostepowanieController extends AbstractController
     ): Response {
         $this->denyUnlessAccessible($postepowanie, $repo);
 
-        $form = $this->createForm(PostepowanieType::class, $postepowanie);
+        $form = $this->createForm(PostepowanieType::class, $postepowanie, [
+            'pracownicy' => $em->getRepository(\App\Entity\Pracownik::class)->findAll(),
+            'user' => $this->getUser(),
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // 🔥 teraz działa bo mapped=false
+            $prowadzacy = $form->get('prowadzacy')->getData();
+
+            if (!$prowadzacy) {
+                $this->addFlash('error', 'Musisz wybrać prowadzącego');
+                return $this->redirectToRoute('app_postepowanie_edit', [
+                    'id' => $postepowanie->getId()
+                ]);
+            }
+
+            $postepowanie->setProwadzacy($prowadzacy);
+
             $em->flush();
+
+            $this->addFlash('success', 'Zapisano zmiany');
+
             return $this->redirectToRoute('app_postepowanie_index');
         }
 
@@ -248,4 +299,5 @@ final class PostepowanieController extends AbstractController
             throw $this->createAccessDeniedException();
         }
     }
+
 }
