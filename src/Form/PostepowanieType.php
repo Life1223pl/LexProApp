@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Postepowanie;
+use App\Entity\Pracownik;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -23,6 +25,13 @@ class PostepowanieType extends AbstractType
                 'attr' => ['class' => 'form-control'],
             ])
 
+            ->add('prowadzacy', EntityType::class, [
+                'class' => Pracownik::class,
+                'choice_label' => fn($p) => $p->getImie().' '.$p->getNazwisko(),
+                'disabled' => false,
+                'attr' => ['class' => 'form-select'],
+            ])
+
             ->add('rodzaj', ChoiceType::class, [
                 'label' => 'Rodzaj postępowania',
                 'choices' => [
@@ -30,45 +39,33 @@ class PostepowanieType extends AbstractType
                     'Śledztwo' => 'sledztwo',
                     'Postępowanie o wykroczenie' => 'wykroczenie',
                 ],
-                'placeholder' => '— wybierz —',
-                'required' => true,
                 'attr' => ['class' => 'form-select'],
             ])
 
             ->add('dataWszczecia', DateType::class, [
-                'label' => 'Data wszczęcia',
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
             ])
 
             ->add('dataZakonczenia', DateType::class, [
-                'label' => 'Data zakończenia',
                 'widget' => 'single_text',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
 
             ->add('opis', TextareaType::class, [
-                'label' => 'Opis postępowania',
-                'required' => false,
-                'attr' => [
-                    'rows' => 4,
-                    'class' => 'form-control'
-                ],
-            ])
-
-            ->add('glownyArtykulSprawy', TextType::class, [
-                'label' => 'Główny artykuł sprawy',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
 
-            // NOWY PRZYCISK
+            ->add('glownyArtykulSprawy', TextType::class, [
+                'required' => false,
+                'attr' => ['class' => 'form-control'],
+            ])
+
             ->add('save', SubmitType::class, [
                 'label' => 'Zapisz zmiany',
-                'attr' => [
-                    'class' => 'btn btn-primary'
-                ]
+                'attr' => ['class' => 'btn btn-primary']
             ]);
     }
 
@@ -76,6 +73,7 @@ class PostepowanieType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Postepowanie::class,
+            'is_supervisor' => false,
         ]);
     }
 }

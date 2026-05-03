@@ -3,22 +3,6 @@
 {% block title %}Edycja czynności — {{ postepowanie.numer }}{% endblock %}
 
 {% block body %}
-    {% if czynnosc.isSpisRzeczyDozwolony %}
-        <div class="mb-3">
-            <a class="btn btn-outline-primary"
-               href="{{ path('app_postepowanie_czynnosc_spis_edit', { postepowanie: postepowanie.id, id: czynnosc.id }) }}">
-                Spis i opis rzeczy
-            </a>
-        </div>
-    {% endif %}
-    <a class="btn btn-outline-success mb-3"
-       href="{{ path('app_postepowanie_czynnosc_protokol_generate', { postepowanie: postepowanie.id, id: czynnosc.id }) }}">
-        Generuj protokół (DOCX)
-    </a>
-
-
-
-
 
     <div class="container py-4">
         <div class="mb-3">

@@ -117,7 +117,8 @@ final class CzynnoscController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
-            // Oczekujemy JSON z frontu
+
+            // pobranie JSON
             $payload = $request->request->get('spisRzeczyJson');
             $decoded = null;
 
@@ -132,9 +133,9 @@ final class CzynnoscController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Zapisano spis i opis rzeczy.');
-            return $this->redirectToRoute('app_postepowanie_czynnosc_edit', [
+
+            return $this->redirectToRoute('app_postepowanie_czynnosc_index', [
                 'postepowanie' => $postepowanie->getId(),
-                'id' => $czynnosc->getId(),
             ]);
         }
 

@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        {# FLASH MESSAGES #}
+        {# FLASH #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }} alert-dismissible fade show">
@@ -48,7 +48,7 @@
                             <th style="width: 220px;">Data</th>
                             <th>Typ</th>
                             <th>Miejsce</th>
-                            <th style="width: 200px;" class="text-end">Akcje</th>
+                            <th style="width: 260px;" class="text-end">Akcje</th>
                         </tr>
                         </thead>
 
@@ -72,19 +72,19 @@
                                 </td>
 
                                 <td>
-                                <span class="badge text-bg-primary">
-                                    {{ c.getTyp() }}
-                                </span>
+                                    <span class="badge text-bg-primary">
+                                        {{ c.getTyp() }}
+                                    </span>
 
                                     {% if c.isSpisRzeczyDozwolony() %}
                                         {% if c.getSpisRzeczy() and c.getSpisRzeczy()|length > 0 %}
                                             <span class="badge text-bg-success ms-2">
-                                            Spis: TAK
-                                        </span>
+                                                ✔ Spis
+                                            </span>
                                         {% else %}
                                             <span class="badge text-bg-secondary ms-2">
-                                            Spis: —
-                                        </span>
+                                                ⏳ Spis
+                                            </span>
                                         {% endif %}
                                     {% endif %}
                                 </td>
@@ -97,29 +97,51 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary"
-                                       href="{{ path('app_postepowanie_czynnosc_edit', {
-                                           postepowanie: postepowanie.id,
-                                           id: c.id
-                                       }) }}">
-                                        Edytuj
-                                    </a>
+                                    <div class="btn-group btn-group-sm">
 
-                                    <form method="post"
-                                          action="{{ path('app_postepowanie_czynnosc_delete', {
-                                              postepowanie: postepowanie.id,
-                                              id: c.id
-                                          }) }}"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Usunąć czynność?');">
+                                        {# EDYTUJ #}
+                                        <a class="btn btn-outline-primary"
+                                           href="{{ path('app_postepowanie_czynnosc_edit', {
+                                               postepowanie: postepowanie.id,
+                                               id: c.id
+                                           }) }}">
+                                            ✎
+                                        </a>
 
-                                        <input type="hidden" name="_token"
-                                               value="{{ csrf_token('delete_czynnosc_' ~ c.id) }}">
+                                        {# USUŃ #}
+                                        <form method="post"
+                                              action="{{ path('app_postepowanie_czynnosc_delete', {
+                                                  postepowanie: postepowanie.id,
+                                                  id: c.id
+                                              }) }}"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Usunąć czynność?');">
+                                            <input type="hidden" name="_token"
+                                                   value="{{ csrf_token('delete_czynnosc_' ~ c.id) }}">
+                                            <button class="btn btn-outline-danger">🗑</button>
+                                        </form>
 
-                                        <button class="btn btn-sm btn-outline-danger">
-                                            Usuń
-                                        </button>
-                                    </form>
+                                        {# SPIS RZECZY #}
+                                        {% if c.isSpisRzeczyDozwolony() %}
+                                            <a class="btn btn-outline-secondary"
+                                               href="{{ path('app_postepowanie_czynnosc_spis_edit', {
+                                                   postepowanie: postepowanie.id,
+                                                   id: c.id
+                                               }) }}">
+                                                📦
+                                            </a>
+                                        {% endif %}
+
+                                        {# PROTOKÓŁ #}
+                                        <a class="btn btn-outline-success"
+                                           href="{{ path('app_postepowanie_czynnosc_protokol_generate', {
+                                               postepowanie: postepowanie.id,
+                                               id: c.id
+                                           }) }}">
+                                            📄
+                                        </a>
+
+                                    </div>
                                 </td>
                             </tr>
                         {% else %}

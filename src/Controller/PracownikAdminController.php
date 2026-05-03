@@ -10,8 +10,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/pracownicy', name: 'admin_pracownicy_')]
+#[IsGranted('ROLE_ADMIN')]
 class PracownikAdminController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -24,19 +27,39 @@ class PracownikAdminController extends AbstractController
     }
 
 
+
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(
         Pracownik $pracownik,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
     ): Response {
-        $form = $this->createForm(AdminPracownikType::class, $pracownik);
+        $form = $this->createForm(AdminPracownikType::class, $pracownik, [
+            'pracownicy' => $em->getRepository(Pracownik::class)->findAll(),
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $data = $request->request->all('admin_pracownik');
-            $pracownik->setIsActive(isset($data['isActive']));
+            // ROLE (ręczne)
+            $roles = $request->request->all('roles') ?? [];
+            if (!in_array('ROLE_USER', $roles)) {
+                $roles[] = 'ROLE_USER';
+            }
+            $pracownik->setRoles($roles);
+
+            // AKTYWNOŚĆ
+            $pracownik->setIsActive($form->get('isActive')->getData());
+
+            // HASŁO
+            $newPassword = $form->get('plainPassword')->getData();
+            if ($newPassword) {
+                $pracownik->setPassword(
+                    $passwordHasher->hashPassword($pracownik, $newPassword)
+                );
+            }
 
             $em->flush();
 
