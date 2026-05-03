@@ -26,21 +26,21 @@ class PostepowanieRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    public function isAccessibleForUser(\App\Entity\Postepowanie $postepowanie, Pracownik $user): bool
+    public function isAccessibleForUser(Postepowanie $p, $user): bool
     {
-        $count = $this->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
-            ->leftJoin('p.przypisania', 'pp')
-            ->leftJoin('pp.pracownik', 'assigned')
-            ->innerJoin('p.prowadzacy', 'lead')
-            ->andWhere('p = :p')
-            ->andWhere('lead = :me OR assigned = :me OR lead.przelozony = :me')
-            ->setParameter('p', $postepowanie)
-            ->setParameter('me', $user)
-            ->getQuery()
-            ->getSingleScalarResult();
+        // 🔥 ADMIN zawsze może
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return true;
+        }
 
-        return ((int)$count) > 0;
+        // 🔥 przełożony → swoje + podwładni
+        if (in_array('ROLE_SUPERVISOR', $user->getRoles(), true)) {
+            return $p->getProwadzacy() === $user
+                || $p->getProwadzacy()?->getPrzelozony()?->getId() === $user->getId();
+        }
+
+        // 🔥 zwykły user → tylko swoje
+        return $p->getProwadzacy() === $user;
     }
 
 
@@ -48,29 +48,41 @@ class PostepowanieRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Postepowanie::class);
     }
-    public function findAccessibleForUserFiltered(\App\Entity\Pracownik $user, ?string $filter): array
+    public function findAccessibleForUserFiltered($user, ?string $status = null): array
     {
-        $qb = $this->createQueryBuilder('p')
-            ->innerJoin('p.prowadzacy', 'lead')
-            ->leftJoin('p.przypisania', 'pp')
-            ->leftJoin('pp.pracownik', 'assigned')
-            ->andWhere('lead = :me OR assigned = :me OR lead.przelozony = :me')
-            ->setParameter('me', $user)
-            ->distinct()
-            ->orderBy('p.id', 'DESC');
+        $qb = $this->createQueryBuilder('p');
 
-        $today = new \DateTimeImmutable('today');
+        //  ADMIN widzi wszystko
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            // brak ograniczeń
+        }
+        //  PRZEŁOŻONY widzi:
+        // - swoje
+        // - swoich podwładnych
+        elseif (in_array('ROLE_SUPERVISOR', $user->getRoles(), true)) {
+            $qb->andWhere('p.prowadzacy = :me OR p.prowadzacy IN (:podwladni)')
+                ->setParameter('me', $user)
+                ->setParameter('podwladni', $user->getPodwladni()->toArray());
+        }
+        // zwykły user → tylko swoje
+        else {
+            $qb->andWhere('p.prowadzacy = :me')
+                ->setParameter('me', $user);
+        }
 
-        if ($filter === 'active') {
-            $qb->andWhere('p.dataZakonczenia IS NULL OR p.dataZakonczenia >= :today')
-                ->setParameter('today', $today);
-        } elseif ($filter === 'closed') {
-            $qb->andWhere('p.dataZakonczenia IS NOT NULL AND p.dataZakonczenia < :today')
-                ->setParameter('today', $today);
+        if ($status === 'active') {
+            $qb->andWhere('p.status != :closed')
+                ->setParameter('closed', 'ZAKONCZONE');
+        }
+
+        if ($status === 'closed') {
+            $qb->andWhere('p.status = :closed')
+                ->setParameter('closed', 'ZAKONCZONE');
         }
 
         return $qb->getQuery()->getResult();
     }
+
 
 
 }
