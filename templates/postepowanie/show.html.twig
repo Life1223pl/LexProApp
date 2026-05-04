@@ -85,6 +85,17 @@
             {% endfor %}
         {% endfor %}
 
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <strong>Opis postępowania</strong>
+            </div>
+
+            <div class="card-body">
+                <div style="white-space: pre-line;">
+                    {{ postepowanie.opis ?: '— brak opisu —' }}
+                </div>
+            </div>
+        </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
