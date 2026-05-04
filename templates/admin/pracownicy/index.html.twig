@@ -5,7 +5,15 @@
 {% block body %}
     <div class="container mt-4">
 
-        <h1 class="mb-4">Pracownicy</h1>
+        {# nagłówek + przycisk do zarządzania osobami #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Pracownicy</h1>
+
+            <a href="{{ path('admin_osoba_index') }}"
+               class="btn btn-outline-primary">
+                Osoby
+            </a>
+        </div>
 
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">{{ message }}</div>
@@ -14,7 +22,7 @@
         {# ===================== OCZEKUJĄCY ===================== #}
         <div class="card mb-4 border-warning">
             <div class="card-header bg-warning text-dark">
-                ⏳ Oczekujący użytkownicy ({{ oczekujacy|length }})
+                Oczekujący użytkownicy ({{ oczekujacy|length }})
             </div>
 
             <div class="card-body p-0">
@@ -44,14 +52,14 @@
 
                                             <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">
-                                                ✎ Edytuj
+                                                Edytuj
                                             </a>
 
                                             <form method="post"
                                                   action="{{ path('admin_pracownicy_activate', {id: p.id}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('activate_' ~ p.id) }}">
                                                 <button class="btn btn-sm btn-success">
-                                                    ✔ Aktywuj
+                                                    Aktywuj
                                                 </button>
                                             </form>
 
@@ -69,7 +77,7 @@
         {# ===================== AKTYWNI ===================== #}
         <div class="card shadow-sm">
             <div class="card-header">
-                ✔ Aktywni użytkownicy ({{ aktywni|length }})
+                Aktywni użytkownicy ({{ aktywni|length }})
             </div>
 
             <div class="card-body p-0">
@@ -102,7 +110,7 @@
                                 </td>
 
                                 <td>
-                                    <span class="badge bg-success">✔ Aktywny</span>
+                                    <span class="badge bg-success">Aktywny</span>
                                 </td>
 
                                 <td class="text-end">
@@ -110,7 +118,7 @@
 
                                         <a class="btn btn-sm btn-outline-secondary"
                                            href="{{ path('admin_pracownicy_edit', {id: p.id}) }}">
-                                            ✎ Edytuj
+                                            Edytuj
                                         </a>
 
                                         <form method="post"
@@ -118,7 +126,7 @@
                                               onsubmit="return confirm('Zablokować użytkownika?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('deactivate_' ~ p.id) }}">
                                             <button class="btn btn-sm btn-outline-danger">
-                                                ❌ Zablokuj
+                                                Zablokuj
                                             </button>
                                         </form>
 

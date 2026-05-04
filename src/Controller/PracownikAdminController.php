@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+
 #[Route('/admin/pracownicy', name: 'admin_pracownicy_')]
 #[IsGranted('ROLE_ADMIN')]
 class PracownikAdminController extends AbstractController
@@ -73,6 +74,7 @@ class PracownikAdminController extends AbstractController
             'form' => $form,
         ]);
     }
+
 
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(
