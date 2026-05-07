@@ -76,6 +76,26 @@
             Nie
         {% elseif v is same as(null) %}
             —
+
+            {# --- KLUCZOWA POPRAWKA: spis/opis rzeczy --- #}
+        {% elseif field == 'spisRzeczy' or field == 'opisRzeczy' %}
+            {% if v is iterable %}
+                {% set out = [] %}
+                {% for item in v %}
+                    {% set txt = item.nazwa ?? '—' %}
+                    {% if item.opis %}
+                        {% set txt = txt ~ ' – ' ~ item.opis %}
+                    {% endif %}
+                    {% if item.kategoria %}
+                        {% set txt = txt ~ ' (' ~ item.kategoria ~ ')' %}
+                    {% endif %}
+                    {% set out = out|merge([txt]) %}
+                {% endfor %}
+                {{ out|join(', ') }}
+            {% else %}
+                {{ v }}
+            {% endif %}
+
         {% elseif v is iterable %}
 
             {% if v.id is defined and v.class is defined %}
@@ -89,9 +109,11 @@
                 {{ _self.prettyValue(field, v.value, enumMaps, relatedLabels) }}
             {% elseif v.name is defined %}
                 {{ _self.prettyValue(field, v.name, enumMaps, relatedLabels) }}
+
             {% else %}
                 {{ v|json_encode }}
             {% endif %}
+
         {% else %}
             {% set s = v ~ '' %}
 
@@ -110,7 +132,6 @@
             {% endif %}
         {% endif %}
     {% endmacro %}
-
     {% import _self as fmt %}
 
     <form method="get" class="card mb-3 p-3">

@@ -208,6 +208,13 @@ class PostepowanieController extends AbstractController
             'postepowanie' => $postepowanie,
             'logs' => $logs,
             'users' => $pracownikRepo->findAll(),
+            'entityChoices' => array_unique(array_map(fn($log) => $log->getEntityClass(), $logs)),
+            'entityNiceNames' => [
+                'App\Entity\Postepowanie' => 'Postępowanie',
+                'App\Entity\Osoba' => 'Osoba',
+                'App\Entity\Czynnosc' => 'Czynność',
+                'App\Entity\PostepowanieOsoba' => 'Osoba w postępowaniu',
+            ],
         ]);
     }
 
