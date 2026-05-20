@@ -8,6 +8,7 @@
         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
             <div>
                 <h1 class="h4 mb-1">Czynności</h1>
+
                 <div class="text-muted small">
                     Postępowanie:
                     <strong>{{ postepowanie.numer }}</strong>
@@ -28,12 +29,15 @@
             </div>
         </div>
 
-        {# FLASH #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label == 'success' ? 'success' : 'info' }} alert-dismissible fade show">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
                 </div>
             {% endfor %}
         {% endfor %}
@@ -43,18 +47,23 @@
 
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
+
                         <thead class="table-light">
                         <tr>
                             <th style="width: 220px;">Data</th>
                             <th>Typ</th>
                             <th>Miejsce</th>
-                            <th style="width: 260px;" class="text-end">Akcje</th>
+                            <th style="width: 520px;" class="text-end">
+                                Akcje
+                            </th>
                         </tr>
                         </thead>
 
                         <tbody>
+
                         {% for c in czynnosci %}
                             <tr>
+
                                 <td>
                                     <div class="fw-semibold">
                                         {{ c.getDataStart()
@@ -77,6 +86,7 @@
                                     </span>
 
                                     {% if c.isSpisRzeczyDozwolony() %}
+
                                         {% if c.getSpisRzeczy() and c.getSpisRzeczy()|length > 0 %}
                                             <span class="badge text-bg-success ms-2">
                                                 ✔ Spis
@@ -86,6 +96,7 @@
                                                 ⏳ Spis
                                             </span>
                                         {% endif %}
+
                                     {% endif %}
                                 </td>
 
@@ -97,15 +108,16 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <div class="btn-group btn-group-sm">
+
+                                    <div class="d-flex flex-wrap gap-2 justify-content-end">
 
                                         {# EDYTUJ #}
-                                        <a class="btn btn-outline-primary"
+                                        <a class="btn btn-sm btn-outline-primary"
                                            href="{{ path('app_postepowanie_czynnosc_edit', {
                                                postepowanie: postepowanie.id,
                                                id: c.id
                                            }) }}">
-                                            ✎
+                                            ✎ Edytuj
                                         </a>
 
                                         {# USUŃ #}
@@ -114,44 +126,53 @@
                                                   postepowanie: postepowanie.id,
                                                   id: c.id
                                               }) }}"
-                                              class="d-inline"
                                               onsubmit="return confirm('Usunąć czynność?');">
-                                            <input type="hidden" name="_token"
+
+                                            <input type="hidden"
+                                                   name="_token"
                                                    value="{{ csrf_token('delete_czynnosc_' ~ c.id) }}">
-                                            <button class="btn btn-outline-danger">🗑</button>
+
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                🗑 Usuń
+                                            </button>
                                         </form>
 
-                                        {# SPIS RZECZY #}
+                                        {# SPIS I OPIS #}
                                         {% if c.isSpisRzeczyDozwolony() %}
-                                            <a class="btn btn-outline-secondary"
+                                            <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('app_postepowanie_czynnosc_spis_edit', {
                                                    postepowanie: postepowanie.id,
                                                    id: c.id
                                                }) }}">
-                                                📦
+                                                📦 Spis i opis
                                             </a>
                                         {% endif %}
 
-                                        {# PROTOKÓŁ #}
-                                        <a class="btn btn-outline-success"
+                                        {# DOCX #}
+                                        <a class="btn btn-sm btn-outline-success"
                                            href="{{ path('app_postepowanie_czynnosc_protokol_generate', {
                                                postepowanie: postepowanie.id,
                                                id: c.id
                                            }) }}">
-                                            📄
+                                            📄 Pobierz DOCX
                                         </a>
 
                                     </div>
+
                                 </td>
+
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
+                                <td colspan="4"
+                                    class="text-center text-muted py-4">
                                     Brak czynności w tym postępowaniu.
                                 </td>
                             </tr>
                         {% endfor %}
+
                         </tbody>
+
                     </table>
                 </div>
 
