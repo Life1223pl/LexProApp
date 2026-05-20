@@ -172,24 +172,105 @@
 {{ form_end(form) }}
 
 
-{# ===================== JS ===================== #}
 <script>
     (function () {
-        const typSelect = document.querySelector('[name$="[typ]"]');
-        const card = document.getElementById('card-przeszukanie-dane');
-        if (!typSelect || !card) return;
 
-        function toggle() {
-            const v = (typSelect.value || '').toLowerCase();
+        const container = document.getElementById('uczestnicy-collection');
+        const addBtn = document.getElementById('add-uczestnik');
 
-            if (v === 'przeszukanie') {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
+        if (!container || !addBtn) {
+            return;
         }
 
-        typSelect.addEventListener('change', toggle);
-        toggle();
+        let index = container.querySelectorAll('.uczestnik-item').length;
+
+        function addRemoveHandlers(scope) {
+
+            scope.querySelectorAll('.remove-uczestnik').forEach(btn => {
+
+                btn.addEventListener('click', () => {
+
+                    const item = btn.closest('.uczestnik-item');
+
+                    if (item) {
+                        item.remove();
+                    }
+
+                });
+
+            });
+
+        }
+
+        addRemoveHandlers(container);
+
+        addBtn.addEventListener('click', () => {
+
+            const prototype = container.dataset.prototype;
+
+            if (!prototype) {
+                return;
+            }
+
+            const html = prototype.replace(/__name__/g, index);
+
+            index++;
+
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+
+            const fields = tmp.querySelectorAll('.mb-3');
+
+            const wrapper = document.createElement('div');
+
+            wrapper.className = 'border rounded-3 p-3 mb-3 uczestnik-item';
+
+            wrapper.innerHTML = `
+                <div class="row g-3">
+
+                    <div class="col-md-3 field-rola"></div>
+
+                    <div class="col-md-4 field-pracownik"></div>
+
+                    <div class="col-md-4 field-osoba"></div>
+
+                    <div class="col-md-10 field-opis"></div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button"
+                                class="btn btn-outline-danger w-100 remove-uczestnik">
+                            Usuń
+                        </button>
+                    </div>
+
+                </div>
+            `;
+
+            if (fields.length >= 4) {
+
+                wrapper.querySelector('.field-rola')
+                    .appendChild(fields[0]);
+
+                wrapper.querySelector('.field-pracownik')
+                    .appendChild(fields[1]);
+
+                wrapper.querySelector('.field-osoba')
+                    .appendChild(fields[2]);
+
+                wrapper.querySelector('.field-opis')
+                    .appendChild(fields[3]);
+
+            } else {
+
+                wrapper.prepend(tmp);
+
+            }
+
+            container.appendChild(wrapper);
+
+            addRemoveHandlers(wrapper);
+
+        });
+
     })();
 </script>

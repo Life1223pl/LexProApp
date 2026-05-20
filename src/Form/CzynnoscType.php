@@ -79,7 +79,6 @@ class CzynnoscType extends AbstractType
                 'required' => false,
             ])
 
-            // ===== JEDYNE POLA REJESTRACJI (działające) =====
             ->add('dane_rejRodzaj', ChoiceType::class, [
                 'label' => 'Rejestracja (rodzaj)',
                 'required' => false,
